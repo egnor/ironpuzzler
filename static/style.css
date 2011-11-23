@@ -14,3 +14,9 @@ body {
   max-width: 700px;
   padding-right: 100px;
 }
+
+.ingredient {
+  margin-top: 0.5em;
+  margin-left: 2em;
+  margin-bottom: 0.5em;
+}
