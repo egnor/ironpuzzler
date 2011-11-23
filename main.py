@@ -9,7 +9,7 @@ import model
 
 class MainPage(webapp.RequestHandler):
   def get(self):
-    game = model.Game.get(model.GAME_KEY)
+    game = model.Game.get(model.GAME_KEY) or model.Game(key=model.GAME_KEY)
     values = dict([(p, getattr(game, p)) for p in game.properties()])
     self.response.out.write(template.render("main.dj.html", values))
 
