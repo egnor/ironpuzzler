@@ -5,20 +5,35 @@
 </head>
 <body>
 
-<div class="header"><img src="static/banner.png"/></div>
-<div class="content">
+<div class="pageheader"><img src="static/banner.png"/></div>
+<div class="pagecontent">
 
 {% if ingredients_visible %}
-  <h2>The secret ingredients are:</h2>
+  <h3>Secret Ingredients!</h3>
   {% for ingredient in ingredients %}
-    <h3 class="ingredient">{{ ingredient }}</h3>
+    <h4 class="ingredient">{{ ingredient }}</h4>
   {% endfor %}
 {% endif %}
+
+{% if login_enabled %}
+<form action="/team" method="post">
+<h3>Team Login</h3>
+<select name="t">
+{% for team in teams %}
+  <option value="{{ team.id }}">{{ team.name }}</option>
+{% endfor %}
+</select>
+<label>p/w: <input type="password" name="password" size=10></label>
+<button>Login</button>
+</form>
+{% endif %}
+
+<h3>About</h3>
 
 <p>Iron Puzzler is a two-day weekend event where contesting teams
 create puzzles on the first day and solve puzzles on the second day.</p>
 
-</div>  <!-- end .content -->
+</div>  <!-- end .pagecontent -->
 
 </body>
 </html>

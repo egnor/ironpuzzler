@@ -5,26 +5,80 @@
 </head>
 <body>
 
-<div class="content">
-<h2>Iron Puzzler Administration</h2>
+<div class="pagecontent">
+<h2 style="margin-bottom: 0">
+<a href="/">Iron Puzzler</a> &raquo; Administration</h2>
+
+<p style="margin-top: 0">
+<em>{{ user_email }}</em>
+(<a href="{{ user_logout_url }}">sign out to change users</a>).</p>
+
+{% if user_ok %}
 
 <form action="/admin" method="post">
-<h4>Secret ingredients</h4>
-
-1. <input type="text" name="ingredient0" value="{{ ingredients.0 }}" > 
-2. <input type="text" name="ingredient1" value="{{ ingredients.1 }}" > 
-3. <input type="text" name="ingredient2" value="{{ ingredients.2 }}" > 
-<input type="checkbox" name="ingredients_visible" value="true"
-  {% if ingredients_visible %} checked {% endif %} >
-Make visible
-</br>
+<h3>Secret ingredients</h3>
 
 <p>
-<button>Submit changes</button>
+1. <input type="text" name="ingredient0" value="{{ ingredients.0 }}"> 
+2. <input type="text" name="ingredient1" value="{{ ingredients.1 }}"> 
+3. <input type="text" name="ingredient2" value="{{ ingredients.2 }}"> 
+<label>
+  <input type="checkbox" name="ingredients_visible" value="true"
+    {% if ingredients_visible %} checked {% endif %} >
+  Make visible
+</label>
 </p>
+
+<h3>Teams</h3>
+
+<table cellpadding=0 cellspacing=0 border=0>
+<tr>
+  <td class="metadata">PP#</td> <td>&nbsp;&nbsp;</td>
+  <td class="metadata">NP#</td> <td>&nbsp;&nbsp;</td>
+</tr>
+{% for team in teams %}
+<tr>
+  <td align="center">{{ team.numbers.0 }}</td> <td> </td>
+  <td align="center">{{ team.numbers.1 }}</td> <td> </td>
+  <td><a href="/team?t={{ team.id }}">{{ team.name }}</a></td>
+</tr>
+{% endfor %}
+<tr>
+  <td colspan=4><label for="add_team">Add team:</label></td>
+  <td>
+    <input type="text" name="new_team" id="add_team" size="40">
+    <label>p/w: <input type="text" name="new_password" size="20"></label>
+  </td>
+</tr>
+</table>
+
+<p><label><input type="checkbox" name="assign_numbers" value="true">
+Assign puzzle numbers now
+</label><br>
+<label><input type="checkbox" name="login_enabled" value="true"
+  {% if login_enabled %} checked {% endif %} >
+Enable team logins
+</label></p>
+
+<h3>Access to this admin page</h3>
+
+<textarea name="admin_users" cols="40" rows="5" class="leftside">
+{% for user in admin_users %}{{ user }}
+{% endfor %}</textarea>
+
+<p class="rightside">Google usernames (eg. <em>joe.smith@gmail.com</em>),
+separated by lines or commas.</p>
+
+<p><button>Submit changes</button></p>
 </form>
 
-</div>  <!-- end .content -->
+{% else %}
+
+<h3>Admin access denied</h3>
+
+{% endif %}
+
+</div>  <!-- end .pagecontent -->
 
 </body>
 </html>
