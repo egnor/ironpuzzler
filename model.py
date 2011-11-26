@@ -1,4 +1,5 @@
 # Iron Puzzler data model
+# Key structure: Game -> Team -> Puzzle
 
 from google.appengine.ext import db
 
@@ -6,10 +7,9 @@ class Game(db.Model):
   ingredients = db.StringListProperty()
   ingredients_visible = db.BooleanProperty()
   admin_users = db.StringListProperty()
-  login_enabled = db.BooleanProperty()
   puzzle_order = db.ListProperty(db.Key)
-
-def GetGame(): return Game.get_or_insert("2012")
+  login_enabled = db.BooleanProperty()
+  solving_enabled = db.BooleanProperty()
 
 
 class Team(db.Model):
@@ -18,11 +18,26 @@ class Team(db.Model):
 
 
 class Puzzle(db.Model):
-  pass
+  title = db.StringProperty()
+  answers = db.StringListProperty()
+  errata = db.StringProperty(multiline=True)
+  solution = db.StringProperty(multiline=True)
 
 
 def GetProperties(entity):
-  props = dict([(p, getattr(entity, p)) for p in entity.properties()])
+  """ Convert a db.Model entity into a plain ol' dict for use in templates. """
+  props = dict([(p, getattr(entity, p) or "") for p in entity.properties()])
   props["key_id"] = entity.key().id()
   props["key_name"] = entity.key().name()
   return props
+
+
+def GetGame():
+  """ Return the singleton Game entity. """
+  return Game.get_or_insert("2012")
+
+
+def GetPuzzleNumber(game, puzzle):
+  """ Get the assigned number of a puzzle, None if unassigned. """
+  try: return game.puzzle_order.index(puzzle.key()) + 1
+  except ValueError: return None

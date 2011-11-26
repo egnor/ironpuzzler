@@ -3,18 +3,27 @@
 <title>{{ team.name }} - Iron Puzzler</title>
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
+<form action="/team" method="post">
 
 <h2><a href="/">Iron Puzzler</a> &raquo; Team: {{ team.name }}</h2>
-<form action="/team" method="post">
 <input type="hidden" name="t" value="{{ team.key_id }}">
-
-{% if user_ok %}
 
 {% if error.set_password %}
   <p class="error">New password confirmation did not match!</p>
 {% endif %}
 
-<h3>Account Settings</h3>
+<h3>Puzzles</h3>
+
+{% for puzzle in puzzles %}
+<h4 class="item">
+  <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.key_name }}">
+    {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
+    {{ puzzle.title|default:"Untitled" }}</a>
+  ({{ puzzle.key_name }})
+</h4>
+{% endfor %}
+
+<h3>Team Account</h3>
 
 <p>
 <label>Team name:
@@ -24,19 +33,5 @@
 </p>
 
 <p><button>Submit changes</button></p>
-
-{% else %} {# not user_ok #}
-
-{% if error.login_password %}
-  <h3 class="error">Invalid Password</h3>
-{% else %}
-  <h3 class="error">Authentication Required</h3>
-{% endif %}
-
-<label>Password: <input type="password" name="login_password" size=10></label>
-<button>Login</button>
-
-{% endif %} {# user_ok #}
-
 </form>
 </div></body></html>  <!-- end .pagecontent -->

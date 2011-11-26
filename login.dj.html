@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>{{ team.name }} Login - Iron Puzzler</title>
+<link rel="stylesheet" href="static/style.css">
+</head><body><div class="pagecontent">
+<form action="/login" method="post">
+<input type="hidden" name="u" value="{{ target }}">
+<input type="hidden" name="t" value="{{ team.key_id }}">
+
+<h2><a href="/">Iron Puzzler</a> &raquo; Login: {{ team.name }}</h2>
+
+{% if error.pw %}
+  <h3 class="error">Invalid Password</h3>
+{% else %}
+  <h3>Authentication Required</h3>
+{% endif %}
+
+<label>Password: <input type="password" name="pw" size=10></label>
+<button>Login</button>
+
+</form>
+</div></body></html>  <!-- end .pagecontent -->

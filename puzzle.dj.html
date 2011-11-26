@@ -1,0 +1,53 @@
+<html>
+<head>
+<title>
+  {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
+  {{ puzzle.title|default:"Untitled" }} ({{ puzzle.key_name }})
+  - {{ team.name }} - Iron Puzzler
+</title>
+<link rel="stylesheet" href="static/style.css">
+</head><body><div class="pagecontent">
+<form action="/puzzle" method="post">
+
+<h2>
+  <a href="/">Iron Puzzler</a> &raquo;
+  <a href="/team?t={{ team.key_id }}">Team: {{ team.name }}</a> &raquo;
+  Puzzle {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
+  ({{ puzzle.key_name }})
+</h2>
+
+<input type="hidden" name="t" value="{{ team.key_id }}">
+<input type="hidden" name="p" value="{{ puzzle.key_name }}">
+
+<p><label>Title:
+<input type="text" name="title" value="{{ puzzle.title }}" size=30>
+</label></p>
+
+<h3>Answers</h3>
+
+<input type="hidden" name="answers_orig" value="{{ puzzle.answers|urlencode }}">
+<textarea name="answers" wrap="off" cols="30" rows="5" class="leftside">
+{{ puzzle.answers }}</textarea>
+<p class="rightside">Correct answers to the puzzle, one per line.
+Capitalization, punctuation, and spacing are ignored.</p>
+
+<h3>Errata</h3>
+
+<input type="hidden" name="errata_orig" value="{{ puzzle.errata|urlencode }}">
+<textarea name="errata" cols="60" rows="6" class="leftside">
+{{ puzzle.errata }}</textarea>
+<p class="rightside">Notes to address problems discovered on game day.
+Visible to all teams.</p>
+
+<h3>Solution</h3>
+
+<input type="hidden" name="solution_orig" value="{{ puzzle.solution|urlencode }}">
+<textarea name="solution" cols="60" rows="15" class="leftside">
+{{ puzzle.solution }}</textarea>
+<p class="rightside">Complete walkthrough for game control.
+Only published after the event.  If you link to external documents
+(Google Docs, etc) make sure they are shared appropriately.</p>
+
+<p><button>Submit changes</button></p>
+</form>
+</div></body></html>  <!-- end .pagecontent -->

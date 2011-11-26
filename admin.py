@@ -29,22 +29,23 @@ class AdminPage(webapp.RequestHandler):
     puzzle_numbers = dict([(p, n + 1)
         for n, p in enumerate(game.puzzle_order or [])])
 
-    team_numbers = {}
-    for pk in model.Puzzle.all(keys_only=True).ancestor(game).fetch(FETCH):
-      numbers = team_numbers.setdefault(pk.parent(), {})
-      numbers[pk.name()] = puzzle_numbers.get(pk, "-")
+    team_puzzles = {}
+    for puzzle in model.Puzzle.all().ancestor(game).fetch(FETCH):
+      pk, pp = puzzle.key(), model.GetProperties(puzzle)
+      pp["number"] = puzzle_numbers.get(pk)
+      team_puzzles.setdefault(pk.parent(), {})[pk.name()] = pp
 
     props = {
       "game": model.GetProperties(game),
       "user_email": user.email(),
       "user_logout_url": users.create_logout_url(dest_url="/admin"),
       "user_ok": IsUserAdmin(game),
-      "teams": []
+      "teams": [],
     }
 
     for team in model.Team.all().ancestor(game).order("name").fetch(FETCH):
       team_props = model.GetProperties(team)
-      team_props["numbers"] = team_numbers.get(team.key(), {})
+      team_props["puzzles"] = team_puzzles.get(team.key(), {})
       props["teams"].append(team_props)
 
     self.response.out.write(template.render("admin.dj.html", props))
@@ -60,27 +61,26 @@ class AdminPage(webapp.RequestHandler):
     game.ingredients_visible = bool(self.request.get("ingredients_visible"))
     game.admin_users = [u for u in admin_users if u]
     game.login_enabled = bool(self.request.get("login_enabled"))
+    game.solving_enabled = bool(self.request.get("solving_enabled"))
+
+    if self.request.get("new_team"):  # before assign_numbers is handled
+      team = model.Team(parent=game)
+      team.name = self.request.get("new_team")
+      team.password = self.request.get("new_password")
+      team.put()
+      for pt in PUZZLE_TYPES: model.Puzzle(parent=team, key_name=pt).put()
 
     if self.request.get("assign_numbers"):
       type_puzzles = {}
       for p in model.Puzzle.all(keys_only=True).ancestor(game).fetch(FETCH):
         type_puzzles.setdefault(p.name(), []).append(p)
 
-      for plist in type_puzzles.values(): random.shuffle(plist)
       game.puzzle_order = []
-      for ptype in PUZZLE_TYPES + type_puzzles.keys():
-        plist = type_puzzles.get(ptype, [])
+      for ptype, plist in sorted(type_puzzles.items()):
+        random.shuffle(plist)
         game.puzzle_order.extend(plist)
-        plist[:] = []
 
     game.put()
-
-    if self.request.get("new_team"):
-      team = model.Team(parent=game)
-      team.name = self.request.get("new_team")
-      team.password = self.request.get("new_password")
-      team.put()
-      for pt in PUZZLE_TYPES: model.Puzzle(parent=team, key_name=pt).put()
 
     self.redirect("/admin")
 
