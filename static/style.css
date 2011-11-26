@@ -30,8 +30,8 @@ body {
   clear: both;
 }
 
-.metadata {
-  color: #888888;
+.error {
+  color: #FF0000;
 }
 
 .ingredient {

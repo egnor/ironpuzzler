@@ -12,11 +12,9 @@ MAX_TEAMS = 1000
 class MainPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
-    props = model.GetProperties(game)
-    props["teams"] = teams = []
+    props = { "game": model.GetProperties(game), "teams": [] }
     for team in model.Team.all().ancestor(game).order("name").fetch(MAX_TEAMS):
-      team_props = model.GetProperties(team)
-      teams.append(team_props)
+      props["teams"].append(model.GetProperties(team))
     self.response.out.write(template.render("main.dj.html", props))
 
 app = webapp.WSGIApplication([('/', MainPage)], debug=True)

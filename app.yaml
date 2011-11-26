@@ -10,6 +10,9 @@ handlers:
 - url: /admin
   script: admin.py
 
+- url: /team
+  script: team.py
+
 - url: /static
   static_dir: static
 

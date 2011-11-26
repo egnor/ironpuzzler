@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>{{ team.name }} - Iron Puzzler</title>
+<link rel="stylesheet" href="static/style.css">
+</head><body><div class="pagecontent">
+
+<h2><a href="/">Iron Puzzler</a> &raquo; Team: {{ team.name }}</h2>
+<form action="/team" method="post">
+<input type="hidden" name="t" value="{{ team.key_id }}">
+
+{% if user_ok %}
+
+{% if error.set_password %}
+  <p class="error">New password confirmation did not match!</p>
+{% endif %}
+
+<h3>Account Settings</h3>
+
+<p>
+<label>Team name:
+<input type="text" name="name" value="{{ team.name }}" size=30></label><br>
+<label>Set password: <input type="password" name="set_password" size=10></label>
+<label>confirm: <input type="password" name="confirm_password" size=10></label>
+</p>
+
+<p><button>Submit changes</button></p>
+
+{% else %} {# not user_ok #}
+
+{% if error.login_password %}
+  <h3 class="error">Invalid Password</h3>
+{% else %}
+  <h3 class="error">Authentication Required</h3>
+{% endif %}
+
+<label>Password: <input type="password" name="login_password" size=10></label>
+<button>Login</button>
+
+{% endif %} {# user_ok #}
+
+</form>
+</div></body></html>  <!-- end .pagecontent -->

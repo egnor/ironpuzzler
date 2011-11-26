@@ -6,24 +6,25 @@
 <body>
 
 <div class="pageheader"><img src="static/banner.png"/></div>
+
 <div class="pagecontent">
 
-{% if ingredients_visible %}
+{% if game.ingredients_visible %}
   <h3>Secret Ingredients!</h3>
-  {% for ingredient in ingredients %}
+  {% for ingredient in game.ingredients %}
     <h4 class="ingredient">{{ ingredient }}</h4>
   {% endfor %}
 {% endif %}
 
-{% if login_enabled %}
+{% if game.login_enabled %}
 <form action="/team" method="post">
 <h3>Team Login</h3>
 <select name="t">
 {% for team in teams %}
-  <option value="{{ team.id }}">{{ team.name }}</option>
+  <option value="{{ team.key_id }}">{{ team.name }}</option>
 {% endfor %}
 </select>
-<label>p/w: <input type="password" name="password" size=10></label>
+<label>password: <input type="password" name="login_password" size=10></label>
 <button>Login</button>
 </form>
 {% endif %}
