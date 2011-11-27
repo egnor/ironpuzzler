@@ -7,13 +7,11 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import model
 
-MAX_TEAMS = 1000
-
 class MainPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
     props = { "game": model.GetProperties(game), "teams": [] }
-    for team in model.Team.all().ancestor(game).order("name").fetch(MAX_TEAMS):
+    for team in model.Team.all().ancestor(game).order("name"):
       props["teams"].append(model.GetProperties(team))
     self.response.out.write(template.render("main.dj.html", props))
 

@@ -1,7 +1,6 @@
 # Iron Puzzler puzzle page handler
 
 import logging
-import re
 import urllib
 
 from google.appengine.ext import db
@@ -9,10 +8,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-import model
+import guess
 import login
-
-FETCH = 1000
+import model
 
 
 def MaybeGetPuzzle(team, request):
@@ -30,7 +28,6 @@ class PuzzlePage(webapp.RequestHandler):
     if not puzzle: return self.error(404)
 
     props = {
-      "error": dict([(e, 1) for e in self.request.get_all("error")]),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "puzzle": model.GetProperties(puzzle),
@@ -64,7 +61,7 @@ class PuzzlePage(webapp.RequestHandler):
     if "answers" in updates:
       puzzle.answers = []
       for answer in updates.get("answers").split("\n"):
-        answer = re.sub('[\W]+', '', answer).upper()
+        answer = guess.NormalizeAnswer(answer)
         if answer: puzzle.answers.append(answer)
 
     if "errata" in updates: puzzle.errata = updates.get("errata")

@@ -10,6 +10,9 @@ handlers:
 - url: /admin
   script: admin.py
 
+- url: /guess
+  script: guess.py
+
 - url: /login
   script: login.py
 

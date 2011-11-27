@@ -4,38 +4,40 @@
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
 
-<h2><a href="/">Iron Puzzler</a> &raquo; Team: {{ team.name }}</h2>
+<h2><a href="/">Iron Puzzler</a> &raquo; {{ team.name }}</h2>
 
 {% if error.set_password %}
   <p class="error">New password confirmation did not match!</p>
 {% endif %}
 
 {% if game.solving_enabled %}
-<h3>Solving status</h3>
+<h3>Solving</h3>
 
 <table cellpadding=0 cellspacing=0 border=0>
 {% for puzzle in all_puzzles %}
 <tr>
   <td style="width: 2em">#{{ puzzle.number }}&nbsp;</td>
-  <td>{{ puzzle.title }}&nbsp;</td>
+  <td>{{ puzzle.title|default:"Untitled" }}&nbsp;</td>
   <td style="width: 1em">&nbsp;</td>
   <td>
     {% if puzzle.is_team %}
       <b style="color: #666666">YOURS</b>
-    {% else %} {% if puzzle.solve_time %}
-      <b style="color: #66FF66">SOLVED</b>  <!-- todo: time -->
     {% else %}
-      <form action="/guess" method="post">
-        <input type="hidden" name="t" value="{{ team.key_id }}">
-        <input type="hidden" name="n" value="{{ puzzle.number }}">
-        <input type="text" name="answer" size=20>
-        <button>Guess</button>
-        {% if puzzle.attempt_count %}
-          (<a href="/guess?n={{ puzzle.number }}&t={{ team.key_id }}">
-            {{ puzzle.attempt_count }} attempts</a>)
-        {% endif %}
-      </form>
-    {% endif %} {% endif %}
+      {% if puzzle.solve_time %}
+        <b style="color: #66FF66">SOLVED</b>
+        {{ puzzle.solve_time|timesince }} ago
+      {% else %}
+        <form action="/guess" method="post">
+          <input type="hidden" name="t" value="{{ team.key_id }}">
+          <input type="hidden" name="n" value="{{ puzzle.number }}">
+          <input type="text" name="answer" size=20>
+          <button>Submit</button>
+        </form>
+      {% endif %}
+      {% if puzzle.guess_count %}
+        (<a href="/guess?t={{ team.key_id }}&n={{ puzzle.number }}">{{ puzzle.guess_count }} attempts</a>)
+      {% endif %}
+    {% endif %}
   </td>
 </tr>
 {% endfor %}
@@ -57,7 +59,7 @@
 </h4>
 {% endfor %}
 
-<p class="item">Ingredients: <b>{{ game.ingredients|join:", " }}</b></p>
+<p>Ingredients: <b>{{ game.ingredients|join:", " }}</b></p>
 
 <h3>Team account</h3>
 

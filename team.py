@@ -27,13 +27,23 @@ class TeamPage(webapp.RequestHandler):
       "all_puzzles": [],
     }
 
+    puzzle_props = {}
     for number, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
-      puzzle_props = model.GetProperties(puzzle)
-      puzzle_props["number"] = number + 1
-      puzzle_props["is_team"] = (puzzle.key().parent() == team.key())
-      props["all_puzzles"].append(puzzle_props)
+      pp = puzzle_props[puzzle.key()] = model.GetProperties(puzzle)
+      pp["number"] = number + 1
+      pp["is_team"] = (puzzle.key().parent() == team.key())
+      pp["guess_count"] = 0
+      pp["answer_set"] = set(puzzle.answers)
+      props["all_puzzles"].append(pp)
 
-    for puzzle in model.Puzzle.all().ancestor(team).fetch(FETCH):
+    query = model.Guess.all().ancestor(game)
+    for guess in query.filter("team", team.key()):
+      pp = puzzle_props.get(guess.parent().key())
+      if pp:
+        if guess.answer in pp["answer_set"]: pp["solve_time"] = guess.timestamp
+        pp["guess_count"] += 1
+
+    for puzzle in model.Puzzle.all().ancestor(team):
       puzzle_props = model.GetProperties(puzzle)
       puzzle_props["number"] = model.GetPuzzleNumber(game, puzzle)
       props["team_puzzles"].append(puzzle_props)

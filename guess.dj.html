@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>
+  #{{ puzzle.number }}
+  {{ puzzle.title|default:"Untitled" }} ({{ puzzle.key_name }})
+  - {{ team.name }} - Iron Puzzler
+</title>
+<link rel="stylesheet" href="static/style.css">
+</head><body><div class="pagecontent">
+
+<h2>
+  <a href="/">Iron Puzzler</a> &raquo;
+  <a href="/team?t={{ team.key_id }}">{{ team.name }}</a> &raquo;
+  Solving: #{{ puzzle.number }} {{ puzzle.title|default:"Untitled" }}
+</h2>
+
+<p>
+  <form action="/guess" method="post">
+    <input type="hidden" name="t" value="{{ team.key_id }}">
+    <input type="hidden" name="n" value="{{ puzzle.number }}">
+    <input type="text" name="answer" size=20>
+    <button>Submit</button>
+  </form>
+</p>
+
+<table cellpadding=0 cellspacing=0 border=0>
+{% for guess in guesses %}
+<tr>
+  <td><b>{{ guess.answer }}</b></td>
+  <td style="width: 1em">&nbsp;</td>
+  <td>
+    {% if guess.is_correct %}
+      <b style="color: #00DD00">CORRECT</b>
+    {% else %}
+      <span style="color: #FF0000">incorrect</span>
+    {% endif %}
+  </td>
+  <td style="width: 1em">&nbsp;</td>
+  <td>{{ guess.timestamp|timesince }} ago</td>
+</tr>
+{% endfor %}
+</table>
+
+</div></body></html>  <!-- end .pagecontent -->

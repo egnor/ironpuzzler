@@ -1,5 +1,5 @@
 # Iron Puzzler data model
-# Key structure: Game -> Team -> Puzzle
+# Key structure: Game -> Team -> Puzzle -> Guess
 
 from google.appengine.ext import db
 
@@ -23,6 +23,12 @@ class Puzzle(db.Model):
   answers = db.StringListProperty()
   errata = db.StringProperty(multiline=True)
   solution = db.StringProperty(multiline=True)
+
+
+class Guess(db.Model):
+  timestamp = db.DateTimeProperty(auto_now_add=True)
+  answer = db.StringProperty()
+  team = db.ReferenceProperty(Team)
 
 
 def GetProperties(entity):
