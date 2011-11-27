@@ -23,13 +23,20 @@ class TeamPage(webapp.RequestHandler):
       "error": dict([(e, 1) for e in self.request.get_all("error")]),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
-      "puzzles": [],
+      "team_puzzles": [],
+      "all_puzzles": [],
     }
+
+    for number, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
+      puzzle_props = model.GetProperties(puzzle)
+      puzzle_props["number"] = number + 1
+      puzzle_props["is_team"] = (puzzle.key().parent() == team.key())
+      props["all_puzzles"].append(puzzle_props)
 
     for puzzle in model.Puzzle.all().ancestor(team).fetch(FETCH):
       puzzle_props = model.GetProperties(puzzle)
       puzzle_props["number"] = model.GetPuzzleNumber(game, puzzle)
-      props["puzzles"].append(puzzle_props)
+      props["team_puzzles"].append(puzzle_props)
 
     self.response.out.write(template.render("team.dj.html", props))
 
@@ -40,9 +47,8 @@ class TeamPage(webapp.RequestHandler):
     if not team: return
 
     self.redirect("/team?t=%d" % team.key().id())
-
-    name = self.request.get("name")
-    if name: team.name = name
+    team.name = self.request.get("name") or team.name
+    team.email = self.request.get("email")
 
     set_pw = self.request.get("set_password")
     confirm_pw = self.request.get("confirm_password")

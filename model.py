@@ -15,6 +15,7 @@ class Game(db.Model):
 class Team(db.Model):
   name = db.StringProperty()
   password = db.StringProperty()
+  email = db.StringProperty()
 
 
 class Puzzle(db.Model):

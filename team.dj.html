@@ -3,18 +3,52 @@
 <title>{{ team.name }} - Iron Puzzler</title>
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
-<form action="/team" method="post">
 
 <h2><a href="/">Iron Puzzler</a> &raquo; Team: {{ team.name }}</h2>
-<input type="hidden" name="t" value="{{ team.key_id }}">
 
 {% if error.set_password %}
   <p class="error">New password confirmation did not match!</p>
 {% endif %}
 
-<h3>Puzzles</h3>
+{% if game.solving_enabled %}
+<h3>Solving status</h3>
 
-{% for puzzle in puzzles %}
+<table cellpadding=0 cellspacing=0 border=0>
+{% for puzzle in all_puzzles %}
+<tr>
+  <td style="width: 2em">#{{ puzzle.number }}&nbsp;</td>
+  <td>{{ puzzle.title }}&nbsp;</td>
+  <td style="width: 1em">&nbsp;</td>
+  <td>
+    {% if puzzle.is_team %}
+      <b style="color: #666666">YOURS</b>
+    {% else %} {% if puzzle.solve_time %}
+      <b style="color: #66FF66">SOLVED</b>  <!-- todo: time -->
+    {% else %}
+      <form action="/guess" method="post">
+        <input type="hidden" name="t" value="{{ team.key_id }}">
+        <input type="hidden" name="n" value="{{ puzzle.number }}">
+        <input type="text" name="answer" size=20>
+        <button>Guess</button>
+        {% if puzzle.attempt_count %}
+          (<a href="/guess?n={{ puzzle.number }}&t={{ team.key_id }}">
+            {{ puzzle.attempt_count }} attempts</a>)
+        {% endif %}
+      </form>
+    {% endif %} {% endif %}
+  </td>
+</tr>
+{% endfor %}
+</table>
+
+{% endif %}  {# solving_enabled #}
+
+<form action="/team" method="post">
+<input type="hidden" name="t" value="{{ team.key_id }}">
+
+<h3>Your puzzles</h3>
+
+{% for puzzle in team_puzzles %}
 <h4 class="item">
   <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.key_name }}">
     {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
@@ -23,13 +57,19 @@
 </h4>
 {% endfor %}
 
-<h3>Team Account</h3>
+<p class="item">Ingredients: <b>{{ game.ingredients|join:", " }}</b></p>
+
+<h3>Team account</h3>
 
 <p>
 <label>Team name:
-<input type="text" name="name" value="{{ team.name }}" size=30></label><br>
-<label>Set password: <input type="password" name="set_password" size=10></label>
-<label>confirm: <input type="password" name="confirm_password" size=10></label>
+  <input type="text" name="name" value="{{ team.name }}" size=30></label><br>
+<label>Contact email:
+  <input type="text" name="email" value="{{ team.email }}" size=30></label><br>
+<label>Change password:
+  <input type="password" name="set_password" size=10></label>
+<label>confirm:
+  <input type="password" name="confirm_password" size=10></label><br>
 </p>
 
 <p><button>Submit changes</button></p>

@@ -2,6 +2,10 @@ body {
   font-family: Arial, sans-serif;
 }
 
+form {
+  margin-bottom: 0;
+}
+
 .pageheader {
   background-color: black;
   height: 200px;

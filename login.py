@@ -44,7 +44,8 @@ class LoginPage(webapp.RequestHandler):
       "target": self.request.get("u"),
     }
 
-    self.response.delete_cookie("password_%d" % team.key().id())
+    self.response.headers.add_header("Set-Cookie",
+        "password_%d=; Max-Age=0; Path=/" % team.key().id())
     self.response.out.write(template.render("login.dj.html", props))
 
 
@@ -57,8 +58,9 @@ class LoginPage(webapp.RequestHandler):
     password = self.request.get("pw")
     if password == team.password:
       self.redirect(target)
-      self.response.set_cookie("password_%d" % team.key().id(),
-          urllib.quote(password), max_age=7*24*60*60, path="/")
+      self.response.headers.add_header("Set-Cookie",
+          "password_%d=%s; Max-Age=%d; Path=/" % (
+          team.key().id(), urllib.quote(password), 7*24*60*60))
 
     else:
       self.redirect("/login?t=%d&u=%s&error=pw" % (
