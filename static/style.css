@@ -6,6 +6,11 @@ form {
   margin-bottom: 0;
 }
 
+h4 {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
 .pageheader {
   background-color: black;
   height: 200px;
@@ -38,8 +43,6 @@ form {
   color: #FF0000;
 }
 
-.item {
-  margin-top: 0.5em;
+.quoted {
   margin-left: 2em;
-  margin-bottom: 0.5em;
 }

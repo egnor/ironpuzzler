@@ -22,6 +22,7 @@ class Puzzle(db.Model):
   title = db.StringProperty()
   answers = db.StringListProperty()
   errata = db.StringProperty(multiline=True)
+  errata_timestamp = db.DateTimeProperty()
   solution = db.StringProperty(multiline=True)
 
 

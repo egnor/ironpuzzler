@@ -1,5 +1,6 @@
 # Iron Puzzler puzzle page handler
 
+import datetime
 import logging
 import urllib
 
@@ -64,7 +65,9 @@ class PuzzlePage(webapp.RequestHandler):
         answer = guess.NormalizeAnswer(answer)
         if answer: puzzle.answers.append(answer)
 
-    if "errata" in updates: puzzle.errata = updates.get("errata")
+    if "errata" in updates:
+      puzzle.errata_timestamp = datetime.datetime.now()
+      puzzle.errata = updates.get("errata")
 
     if "solution" in updates: puzzle.errata = updates.get("solution")
 
