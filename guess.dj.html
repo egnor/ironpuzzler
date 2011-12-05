@@ -14,22 +14,24 @@
   Solving: #{{ puzzle.number }} {{ puzzle.title|default:"Untitled" }}
 </h2>
 
-<p>
-  <form action="/guess" method="post">
+{% if solve_time %}
+  <h3 class="guess_correct">SOLVED</h3>
+{% else %}
+  <p><form action="/guess" method="post">
     <input type="hidden" name="t" value="{{ team.key_id }}">
     <input type="hidden" name="n" value="{{ puzzle.number }}">
     <input type="text" name="answer" size=20>
     <button>Submit</button>
-  </form>
-</p>
+  </form></p>
+{% endif %}
 
 {% if puzzle.errata %}
-  <h4>Errata</h4>
+  <h3>Errata</h3>
   <div class="quoted">{{ puzzle.errata|linebreaks }}</div>
   <p class="quoted"><em>({{ puzzle.errata_timestamp|timesince }} ago)</em></p>
 {% endif %}
 
-<h4>Submissions</h4>
+<h3>Submissions</h3>
 
 {% if guesses %}
   <table cellpadding=0 cellspacing=0 border=0 class="quoted">
@@ -39,9 +41,9 @@
         <td style="width: 1em">&nbsp;</td>
         <td>
           {% if guess.is_correct %}
-            <b style="color: #00DD00">CORRECT</b>
+            <b class="guess_correct">CORRECT</b>
           {% else %}
-            <span style="color: #FF0000">incorrect</span>
+            <span class="guess_incorrect">incorrect</span>
           {% endif %}
         </td>
         <td style="width: 1em">&nbsp;</td>

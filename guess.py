@@ -25,12 +25,13 @@ def MaybeGetPuzzle(game, request):
 class GuessPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
+    if not game.solving_enabled: return self.error(403)
+
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 
     puzzle = MaybeGetPuzzle(game, self.request)
     if not puzzle: return self.error(404)
-    answers = set(puzzle.answers)
 
     props = {
       "game": model.GetProperties(game),
@@ -42,7 +43,9 @@ class GuessPage(webapp.RequestHandler):
     query = model.Guess.all().ancestor(puzzle)
     for guess in query.filter("team", team.key()).order("-timestamp"):
       guess_props = model.GetProperties(guess)
-      if guess.answer in answers: guess_props["is_correct"] = True
+      if guess.answer in puzzle.answers:
+        guess_props["is_correct"] = True
+        props.setdefault("solve_time", guess.timestamp)
       props["guesses"].append(guess_props)
 
     props["puzzle"]["number"] = int(self.request.get("n"))
@@ -52,6 +55,8 @@ class GuessPage(webapp.RequestHandler):
 
   def post(self):
     game = model.GetGame()
+    if not game.solving_enabled: return self.error(403)
+
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 

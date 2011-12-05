@@ -22,7 +22,7 @@
     <td>
       <form action="/guess" method="post">
         {% if puzzle.solve_time %}
-          <b style="color: #66FF66">SOLVED</b>
+          <b class="guess_correct">SOLVED</b>
           {{ puzzle.solve_time|timesince }} ago
         {% else %}
           <input type="hidden" name="t" value="{{ team.key_id }}">
@@ -39,8 +39,6 @@
 {% endfor %}
 </table>
 
-{% endif %}  {# solving_enabled #}
-
 <h3>Errata</h3>
 
 {% if errata_puzzles %}
@@ -55,6 +53,8 @@
 {% else %}
   <p><em>No puzzles have posted errata yet.</em></p>
 {% endif %}
+
+{% endif %}  {# solving_enabled #}
 
 <h3>Your puzzles</h3>
 

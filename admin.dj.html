@@ -11,8 +11,6 @@
 <em>{{ user_email }}</em>
 (<a href="{{ user_logout_url }}">sign out</a>).</p>
 
-{% if user_ok %}
-
 <form action="/admin" method="post">
 <h3>Secret ingredients</h3>
 
@@ -31,36 +29,54 @@
 
 <table cellpadding=0 cellspacing=0 border=0>
 <tr>
-  <td>Team</td>
-  <td style="width: 1em">&nbsp;</td> <td>nonpaper</td>
-  <td style="width: 1em">&nbsp;</td> <td>paper</td>
+  <td> </td>
+  {% for puzzle in puzzles %}
+    <td style="width: 0.5em">&nbsp;</td>
+    <td align="center">
+      <a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.key_name }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title|default:"Untitled" }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">#{{ puzzle.number }}</a>
+    </td>
+  {% endfor %}
 </tr>
-{% for team in teams %}
-  <tr>
-    <td><a href="/team?t={{ team.key_id }}">{{ team.name }}</a></td>
-    <td></td>
-    <td>
-      <a href="/puzzle?t={{ team.key_id }}&p=nonpaper">
-        {% if team.puzzles.nonpaper.number %}
-          #{{ team.puzzles.nonpaper.number }}
-        {% endif %}
-        {{ team.puzzles.nonpaper.title|default:"Untitled" }}
-      </a>
-    </td>
-    <td></td>
-    <td>
-      <a href="/puzzle?t={{ team.key_id }}&p=paper">
-        {% if team.puzzles.paper.number %}
-          #{{ team.puzzles.paper.number }}
-        {% endif %}
-        {{ team.puzzles.paper.title|default:"Untitled" }}
-      </a>
-    </td>
-  </tr>
-{% endfor %}
+  {% for team in teams %}
+    <tr>
+      <td><a href="/team?t={{ team.key_id }}">{{ team.name }}</a></td>
+      {% for puzzle in team.puzzles %}
+        <td></td>
+        <td align="center">
+          {% if puzzle.name %}
+            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.name }}" 
+               class="puzzle_author"
+               title="{{ team.name }} authored #{{ puzzle.number }} &quot;{{ puzzle.title|default:"Untitled" }}&quot;">
+              A
+            </a>
+          {% else %}
+            {% if puzzle.solve_rank %}
+              <a href="/guess?t={{ team.key_id }}&n={{ puzzle.number }}"
+                 class="guess_correct"
+                 title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title|default:"Untitled" }}&quot; {{ puzzle.solve_time|timesince }} ago ({{ puzzle.guess_count }} in attempt{{ puzzle.guess_count|pluralize }})">
+                #{{ puzzle.solve_rank }}
+              </a>
+            {% else %} {% if puzzle.guess_count %}
+              <a href="/guess?t={{ team.key_id }}&n={{ puzzle.number }}"
+                 class="guess_incorrect"
+                 title="{{ team.name }} made {{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }} for #{{ puzzle.number }} &quot;{{ puzzle.title|default:"Untitled" }}&quot;">
+                {{ puzzle.guess_count }}x
+              </a>
+            {% else %}
+              <a href="/guess?t={{ team.key_id }}&n={{ puzzle.number }}"
+                 class="guess_none">
+                --
+              </a>
+            {% endif %} {% endif %}
+          {% endif %}
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
 </table>
+
 <div style="margin-top: 5">
-  <label>new: <input type="text" name="new_team" id="add_team" size="25"></label>
+  <label>Add team: <input type="text" name="new_team" id="add_team" size="25"></label>
   <label>pw: <input type="text" name="new_password" size="10"></label>
 </div>
 
@@ -86,11 +102,5 @@ separated by lines or commas.</p>
 
 <p><button>Submit changes</button></p>
 </form>
-
-{% else %} {# not user_ok #}
-
-<h3 class="error">Admin access denied</h3>
-
-{% endif %} {# user_ok #}
 
 </div></body></html>  <!-- end .pagecontent -->
