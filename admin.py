@@ -3,6 +3,7 @@
 import random
 import re
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -80,6 +81,8 @@ class AdminPage(webapp.RequestHandler):
     game.admin_users = [u for u in admin_users if u]
     game.login_enabled = bool(self.request.get("login_enabled"))
     game.solving_enabled = bool(self.request.get("solving_enabled"))
+    game.voting_enabled = bool(self.request.get("voting_enabled"))
+    game.results_enabled = bool(self.request.get("results_enabled"))
 
     if self.request.get("new_team"):  # before assign_numbers is handled
       team = model.Team(parent=game)
@@ -88,7 +91,7 @@ class AdminPage(webapp.RequestHandler):
       team.put()
       for pt in PUZZLE_TYPES: model.Puzzle(parent=team, key_name=pt).put()
 
-    if self.request.get("assign_numbers"):
+    if self.request.get("assign_numbers") and self.request.get("confirm_numbers"):
       type_puzzles = {}
       for p in model.Puzzle.all(keys_only=True).ancestor(game).fetch(FETCH):
         type_puzzles.setdefault(p.name(), []).append(p)

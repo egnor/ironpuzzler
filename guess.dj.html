@@ -1,8 +1,7 @@
 <html>
 <head>
 <title>
-  #{{ puzzle.number }}
-  {{ puzzle.title|default:"Untitled" }} ({{ puzzle.key_name }})
+  #{{ puzzle.number }} {{ puzzle.title }} ({{ puzzle.key_name }})
   - {{ team.name }} - Iron Puzzler
 </title>
 <link rel="stylesheet" href="static/style.css">
@@ -11,48 +10,86 @@
 <h2>
   <a href="/">Iron Puzzler</a> &raquo;
   <a href="/team?t={{ team.key_id }}">{{ team.name }}</a> &raquo;
-  Solving: #{{ puzzle.number }} {{ puzzle.title|default:"Untitled" }}
+  {% if game.voting_enabled %}
+    Feedback:
+  {% else %}
+    {% if solve_time %}
+      <span class="guess_correct">Solved</span>:
+    {% else %}
+      {% if game.solving_enabled %} Solving: {% endif %}
+    {% endif %}
+  {% endif %}
+  #{{ puzzle.number }} {{ puzzle.title }}
 </h2>
 
-{% if solve_time %}
-  <h3 class="guess_correct">SOLVED</h3>
-{% else %}
-  <p><form action="/guess" method="post">
-    <input type="hidden" name="t" value="{{ team.key_id }}">
-    <input type="hidden" name="n" value="{{ puzzle.number }}">
+<form action="/guess" method="post">
+<input type="hidden" name="t" value="{{ team.key_id }}">
+<input type="hidden" name="p" value="{{ puzzle.number }}">
+{% if game.solving_enabled and not solve_time %}
+  <h3>Solve:
     <input type="text" name="answer" size=20>
     <button>Submit</button>
-  </form></p>
+  </h3>
 {% endif %}
+
+{% if game.voting_enabled or game.results_enabled or solve_time %}
+  {% if game.solving_enabled %}
+    <h3 style="margin-bottom: 0">Draft Feedback</h3>
+    <em>Optional now; you will have time to edit this feedback later.</em><br>
+  {% else %}
+    <h3>Feedback</h3>
+  {% endif %}
+
+  <p>
+  {% for score in feedback.scores %}
+    <label>{% cycle "Fun" "Presentation" "Ingredients" %}:
+    <input type="text" name="score.{{ forloop.counter0 }}" size="3"
+           {% if not game.solving_enabled and not game.voting_enabled %}
+             disabled="disabled"
+           {% endif %}
+           value="{% if score >= 0 %}{{ score }}{% endif %}">
+    </label>
+  {% endfor %}
+  <em>(Numeric scores, 0.0-10.0)</em></p>
+
+  <textarea name="comment" cols="60" rows="6" class="leftside">
+{{ feedback.comment }}</textarea>
+  <p class="rightside">Free form comments for the puzzle authors.
+  Delivered anonymously; sign if you wish.</p>
+
+  <button>Save {% if game.solving_enabled %} draft {% endif %}</button>
+
+  <h3>Solution</h3>
+
+  {{ puzzle.solution|linebreaks }}
+{% endif %}
+</form>
 
 {% if puzzle.errata %}
-  <h3>Errata</h3>
-  <div class="quoted">{{ puzzle.errata|linebreaks }}</div>
-  <p class="quoted"><em>({{ puzzle.errata_timestamp|timesince }} ago)</em></p>
+  <h3>Errata <em>({{ puzzle.errata_timestamp|timesince }} ago)</em></h3>
+  {{ puzzle.errata|linebreaks }}
 {% endif %}
 
-<h3>Submissions</h3>
+<h3>History</h3>
 
-{% if guesses %}
-  <table cellpadding=0 cellspacing=0 border=0 class="quoted">
-    {% for guess in guesses %}
-      <tr>
-        <td><b>{{ guess.answer }}</b></td>
-        <td style="width: 1em">&nbsp;</td>
-        <td>
-          {% if guess.is_correct %}
-            <b class="guess_correct">CORRECT</b>
-          {% else %}
-            <span class="guess_incorrect">incorrect</span>
-          {% endif %}
-        </td>
-        <td style="width: 1em">&nbsp;</td>
-        <td>{{ guess.timestamp|timesince }} ago</td>
-      </tr>
-    {% endfor %}
-  </table>
-{% else %}
-  <p><em>You have made no submissions yet.</em></p>
-{% endif %}
+<table cellpadding=0 cellspacing=0 border=0>
+  {% for guess in guesses %}
+    <tr>
+      <td><b>{{ guess.answer }}</b></td>
+      <td style="width: 1em">&nbsp;</td>
+      <td>
+        {% if guess.is_correct %}
+          <b class="guess_correct">CORRECT</b>
+        {% else %}
+          <span class="guess_incorrect">incorrect</span>
+        {% endif %}
+      </td>
+      <td style="width: 1em">&nbsp;</td>
+      <td>{{ guess.timestamp|timesince }} ago</td>
+    </tr>
+  {% empty %}
+    <tr><td><em>You have made no submissions yet.</em></td></tr>
+  {% endfor %}
+</table>
 
 </div></body></html>  <!-- end .pagecontent -->

@@ -3,6 +3,7 @@
 import logging
 import urllib
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -61,7 +62,6 @@ class LoginPage(webapp.RequestHandler):
       self.response.headers.add_header("Set-Cookie",
           "password_%d=%s; Max-Age=%d; Path=/" % (
           team.key().id(), urllib.quote(password), 7*24*60*60))
-
     else:
       self.redirect("/login?t=%d&u=%s&error=pw" % (
           team.key().id(), urllib.quote(target)))

@@ -2,6 +2,7 @@
 
 import logging
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -36,14 +37,22 @@ class TeamPage(webapp.RequestHandler):
       pp["answer_set"] = set(puzzle.answers)
       if pp.get("errata"):
         props["errata_puzzles"].append(pp)
-      if puzzle.key().parent() == team.key():
+      if puzzle.parent_key() == team.key():
         props["team_puzzles"].append(pp)
       else:
         props["other_puzzles"].append(pp)
 
+    feedback_keys = [
+        db.Key.from_path("Feedback", str(team.key()), parent=pk)
+        for pk in game.puzzle_order if pk.parent() != team.key()]
+    for key, feedback in zip(feedback_keys, model.Feedback.get(feedback_keys)):
+      pp = puzzle_props.get(key.parent())
+      if pp: pp["feedback"] = model.GetProperties(
+          feedback or model.Feedback(key=key))
+
     query = model.Guess.all().ancestor(game)
     for guess in query.filter("team", team.key()):
-      pp = puzzle_props.get(guess.parent().key())
+      pp = puzzle_props.get(guess.parent_key())
       if pp:
         if guess.answer in pp["answer_set"]: pp["solve_time"] = guess.timestamp
         pp["guess_count"] += 1

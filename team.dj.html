@@ -10,14 +10,52 @@
   <p class="error">New password confirmation did not match!</p>
 {% endif %}
 
+{% if game.voting_enabled or game.results_enabled %}
+<h3>Voting</h3>
+
+<form action="/team" method="post">
+<input type="hidden" name="t" value="{{ team.key_id }}">
+
+<p><em>Scores are numeric, 0.0-10.0.  Click the puzzle to see the
+solution or leave comments for the author.</em></p>
+
+<table cellpadding=0 cellspacing=0 border=0>
+  <tr>
+    <td> </td><td> </td>
+    <td>Fun&nbsp;</td>
+    <td>Pres.&nbsp;</td>
+    <td>Ingr.&nbsp;</td>
+  </tr>
+{% for puzzle in other_puzzles %}
+  <tr>
+    <td><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} {{ puzzle.title }}</a></td>
+    <td style="width: 1em">&nbsp;</td>
+    {% for score in puzzle.feedback.scores %}
+      <td>
+        <input type="text" size="3"
+               {% if not game.voting_enabled %} disabled="disabled" {% endif %}
+               name="score.{{ puzzle.number }}.{{ forloop.counter0 }}"
+               value="{% if score >= 0 %}{{ score }}{% endif %}">&nbsp;
+      </td>
+    {% endfor %}
+  </tr>
+{% endfor %}
+</table>
+
+{% if game.voting_enabled %}
+<button>Save votes</button>
+{% endif %}
+</form>
+
+{% endif %}  {# voting_enabled #}
+
 {% if game.solving_enabled %}
 <h3>Solving</h3>
 
 <table cellpadding=0 cellspacing=0 border=0>
 {% for puzzle in other_puzzles %}
   <tr>
-    <td style="width: 2em">#{{ puzzle.number }}&nbsp;</td>
-    <td>{{ puzzle.title|default:"Untitled" }}&nbsp;</td>
+    <td>#{{ puzzle.number }} {{ puzzle.title }}</td>
     <td style="width: 1em">&nbsp;</td>
     <td>
       <form action="/guess" method="post">
@@ -26,12 +64,12 @@
           {{ puzzle.solve_time|timesince }} ago
         {% else %}
           <input type="hidden" name="t" value="{{ team.key_id }}">
-          <input type="hidden" name="n" value="{{ puzzle.number }}">
+          <input type="hidden" name="p" value="{{ puzzle.number }}">
           <input type="text" name="answer" size=20>
           <button>Submit</button>
         {% endif %}
         {% if puzzle.guess_count %}
-          (<a href="/guess?t={{ team.key_id }}&n={{ puzzle.number }}">{{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }}</a>)
+          (<a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">{{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }}</a>)
         {% endif %}
       </form>
     </td>
@@ -41,35 +79,31 @@
 
 <h3>Errata</h3>
 
-{% if errata_puzzles %}
-  {% for puzzle in errata_puzzles|dictsortreversed:"errata_timestamp" %}
-    <h4>
-      {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
-      {{ puzzle.title|default:"Untitled" }}</a>
-    </h4>
-    <div class="quoted">{{ puzzle.errata|linebreaks }}</div>
-    <p class="quoted"><em>({{ puzzle.errata_timestamp|timesince }} ago)</em></p>
-  {% endfor %}
-{% else %}
+{% for puzzle in errata_puzzles|dictsortreversed:"errata_timestamp" %}
+  <h4>
+    #{{ puzzle.number }} {{ puzzle.title }}
+    <em>({{ puzzle.errata_timestamp|timesince }} ago)</em>
+  </h4>
+  <div style="padding-left: 25px">
+    {{ puzzle.errata|linebreaks }}
+  </div>
+{% empty %}
   <p><em>No puzzles have posted errata yet.</em></p>
-{% endif %}
+{% endfor %}
 
 {% endif %}  {# solving_enabled #}
 
 <h3>Your puzzles</h3>
 
-{% if team_puzzles %}
-  {% for puzzle in team_puzzles %}
-    <h4 class="item">
-      <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.key_name }}">
-        {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
-        {{ puzzle.title|default:"Untitled" }}</a>
-      ({{ puzzle.key_name }})
-    </h4>
-  {% endfor %}
-{% else %}
+{% for puzzle in team_puzzles %}
+  <h4 class="item">
+    <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}">
+      #{{ puzzle.number }} {{ puzzle.title }}</a>
+    ({{ puzzle.key_name }})
+  </h4>
+{% empty %}
   <p><em>Your puzzles have not been assigned yet.</em></p>
-{% endif %}
+{% endfor %}
 
 {% if game.ingredients_visible %}
   <p>Ingredients: <b>{{ game.ingredients|join:", " }}</b></p>
@@ -91,6 +125,6 @@
   <input type="password" name="confirm_password" size=10></label><br>
 </p>
 
-<p><button>Submit changes</button></p>
+<button>Update account</button>
 </form>
 </div></body></html>  <!-- end .pagecontent -->

@@ -2,7 +2,7 @@
 <head>
 <title>
   {% if puzzle.number %} #{{ puzzle.number }} {% endif %}
-  {{ puzzle.title|default:"Untitled" }} ({{ puzzle.key_name }})
+  {{ puzzle.title }} ({{ puzzle.key_name }})
   - {{ team.name }} - Iron Puzzler
 </title>
 <link rel="stylesheet" href="static/style.css">
@@ -17,11 +17,20 @@
 
 <form action="/puzzle" method="post">
 <input type="hidden" name="t" value="{{ team.key_id }}">
-<input type="hidden" name="p" value="{{ puzzle.key_name }}">
+<input type="hidden" name="p" value="{{ puzzle.number }}">
 
-<p><label>Title:
-<input type="text" name="title" value="{{ puzzle.title }}" size=30>
-</label></p>
+<h3>Title:
+<input type="text" name="title" value="{{ puzzle.title }}" size=30></h3>
+
+{% if game.results_enabled and comments %}
+<h3>Comments</h3>
+  {% for comment in comments %}
+    {% if not forloop.first %}
+      <p style="padding-left: 15px">&middot; &middot; &middot;</p>
+    {% endif %}
+    {{ comment|linebreaks }}
+  {% endfor %}
+{% endif %}
 
 <h3>Answers</h3>
 
@@ -44,10 +53,9 @@ Visible to all teams.</p>
 <input type="hidden" name="solution_orig" value="{{ puzzle.solution|urlencode }}">
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
-<p class="rightside">Complete walkthrough for game control.
-Only published after the event.  If you link to external documents
-(Google Docs, etc) make sure they are shared appropriately.</p>
+<p class="rightside">Complete walkthrough.
+Visible to all teams once voting starts.</p>
 
-<p><button>Submit changes</button></p>
+<h3><button>Submit changes</button></h3>
 </form>
 </div></body></html>  <!-- end .pagecontent -->

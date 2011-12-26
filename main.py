@@ -1,5 +1,6 @@
 # Iron Puzzler main page handler
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template

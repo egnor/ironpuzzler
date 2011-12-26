@@ -3,6 +3,7 @@
 import logging
 import re
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -10,62 +11,65 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
 import model
-
-
-def NormalizeAnswer(answer):
-  return re.sub('[\W]+', '', answer).upper()
-
-
-def MaybeGetPuzzle(game, request):
-  try: p_key = game.puzzle_order[int(request.get("n")) - 1]
-  except Exception: return None
-  return model.Puzzle.get(p_key)
+from puzzle import MaybeGetPuzzle, NormalizeAnswer
 
 
 class GuessPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
-    if not game.solving_enabled: return self.error(403)
-
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 
     puzzle = MaybeGetPuzzle(game, self.request)
     if not puzzle: return self.error(404)
 
+    feedback = model.Feedback.get_or_insert(str(team.key()), parent=puzzle)
+
     props = {
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "puzzle": model.GetProperties(puzzle),
+      "feedback": model.GetProperties(feedback),
       "guesses": [],
     }
 
     query = model.Guess.all().ancestor(puzzle)
     for guess in query.filter("team", team.key()).order("-timestamp"):
-      guess_props = model.GetProperties(guess)
+      props["guesses"].append(model.GetProperties(guess))
       if guess.answer in puzzle.answers:
-        guess_props["is_correct"] = True
+        props["guesses"][-1]["is_correct"] = True
         props.setdefault("solve_time", guess.timestamp)
-      props["guesses"].append(guess_props)
 
-    props["puzzle"]["number"] = int(self.request.get("n"))
+    props["puzzle"]["number"] = int(self.request.get("p"))
 
     self.response.out.write(template.render("guess.dj.html", props))
 
 
   def post(self):
     game = model.GetGame()
-    if not game.solving_enabled: return self.error(403)
-
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 
     puzzle = MaybeGetPuzzle(game, self.request)
     if not puzzle: return self.error(404)
-    self.redirect("/guess?t=%d&n=%s" % (team.key().id(), self.request.get("n")))
 
-    answer = NormalizeAnswer(self.request.get("answer", ""))
-    if answer: model.Guess(parent=puzzle, answer=answer, team=team).put()
+    if game.solving_enabled:
+      answer = NormalizeAnswer(self.request.get("answer", ""))
+      if answer: model.Guess(parent=puzzle, answer=answer, team=team).put()
+
+    self.redirect("/guess?t=%d&p=%s" % (team.key().id(), self.request.get("p")))
+
+    if self.request.get("comment", None) is not None:
+      feedback = model.Feedback(parent=puzzle, key_name=str(team.key()))
+      feedback.comment = self.request.get("comment")
+      if game.solving_enabled or game.voting_enabled:
+        for s in range(len(feedback.scores)):
+          score = self.request.get("score.%d" % s, -1.0) 
+          try: feedback.scores[s] = float(score)
+          except: feedback.scores[s] = -1.0
+
+      feedback.put()
+      self.redirect("/team?t=%d" % team.key().id())
 
 
 app = webapp.WSGIApplication([("/guess", GuessPage)], debug=True)

@@ -1,25 +1,30 @@
 # Iron Puzzler data model
-# Key structure: Game -> Team -> Puzzle -> Guess
 
+from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 
 class Game(db.Model):
+  """ No parent; Key name: static game ID (see GetGame()) """
   ingredients = db.StringListProperty()
   ingredients_visible = db.BooleanProperty()
   admin_users = db.StringListProperty()
   puzzle_order = db.ListProperty(db.Key)
   login_enabled = db.BooleanProperty()
   solving_enabled = db.BooleanProperty()
+  voting_enabled = db.BooleanProperty()
+  results_enabled = db.BooleanProperty()
 
 
 class Team(db.Model):
+  """ Parent: Game; No key name """
   name = db.StringProperty()
   password = db.StringProperty()
   email = db.StringProperty()
 
 
 class Puzzle(db.Model):
-  title = db.StringProperty()
+  """ Parent: Team (author); Key name: Puzzle type ("paper", "nonpaper") """
+  title = db.StringProperty(default="Untitled")
   answers = db.StringListProperty()
   errata = db.StringProperty(multiline=True)
   errata_timestamp = db.DateTimeProperty()
@@ -27,9 +32,16 @@ class Puzzle(db.Model):
 
 
 class Guess(db.Model):
+  """ Parent: Puzzle; No key name """
   timestamp = db.DateTimeProperty(auto_now_add=True)
   answer = db.StringProperty()
   team = db.ReferenceProperty(Team)
+
+
+class Feedback(db.Model):
+  """ Parent: Puzzle; Key name: Key ID of team giving feedback """
+  scores = db.ListProperty(float, default=[-1., -1., -1.])  # negative means N/A
+  comment = db.StringProperty()
 
 
 def GetProperties(entity):
@@ -43,9 +55,3 @@ def GetProperties(entity):
 def GetGame():
   """ Return the singleton Game entity. """
   return Game.get_or_insert("2012")
-
-
-def GetPuzzleNumber(game, puzzle):
-  """ Get the assigned number of a puzzle, None if unassigned. """
-  try: return game.puzzle_order.index(puzzle.key()) + 1
-  except ValueError: return None

@@ -1,15 +1,18 @@
-body {
-  font-family: Arial, sans-serif;
-}
+body { font-family: Arial, sans-serif; }
 
-form {
-  margin-bottom: 0;
-}
+h2,h3 { text-indent: -25px; }
 
-h4 {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-}
+h2 { margin: 0.5em 0 0.75em 0; }
+
+h3 { margin: 1em 0 0.5em 0; }
+
+h4 { margin: 0.5em 0 0.5em 0; }
+
+p { margin: 0.5em 0 0.5em 0; }
+
+form { margin: 0 0 0 0; }
+
+h1 em,h2 em,h3 em,h4 em { font-weight: normal; }
 
 .pageheader {
   background-color: black;
@@ -18,10 +21,9 @@ h4 {
 }
 
 .pagecontent {
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto 0 auto;
   max-width: 700px;
-  padding-right: 100px;
+  padding: 0 100px 0 25px;
 }
 
 .leftside {
@@ -37,10 +39,6 @@ h4 {
   content: "";
   display: block;
   clear: both;
-}
-
-.quoted {
-  margin-left: 2em;
 }
 
 .error { color: #FF0000; }
