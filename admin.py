@@ -12,7 +12,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import model
 
-FETCH = 1000
 PUZZLE_TYPES = ["paper", "nonpaper"]
 
 def IsUserAdmin(game):
@@ -38,7 +37,7 @@ class AdminPage(webapp.RequestHandler):
 
     puzzles = model.Puzzle.get(game.puzzle_order)
     props_by_team = {}
-    for team in model.Team.all().ancestor(game).order("name").fetch(FETCH):
+    for team in model.Team.all().ancestor(game).order("name"):
       team_props = props_by_team[team.key()] = model.GetProperties(team)
       team_props["puzzles"] = [{
           "number": n + 1,
@@ -56,7 +55,7 @@ class AdminPage(webapp.RequestHandler):
     n_by_key = dict([(k, n) for n, k in enumerate(game.puzzle_order)])
     solve_rank = {}
     query = model.Guess.all().ancestor(game)
-    for guess in query.order("timestamp").fetch(FETCH):
+    for guess in query.order("timestamp"):
       n = n_by_key[guess.key().parent()]
       puzzle = puzzles[n]
       guess_props = props_by_team[guess.team.key()]["puzzles"][n]
@@ -93,7 +92,7 @@ class AdminPage(webapp.RequestHandler):
 
     if self.request.get("assign_numbers") and self.request.get("confirm_numbers"):
       type_puzzles = {}
-      for p in model.Puzzle.all(keys_only=True).ancestor(game).fetch(FETCH):
+      for p in model.Puzzle.all(keys_only=True).ancestor(game):
         type_puzzles.setdefault(p.name(), []).append(p)
 
       game.puzzle_order = []
