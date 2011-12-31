@@ -1,5 +1,6 @@
 # Iron Puzzler submission page handler
 
+import datetime
 import logging
 import re
 
@@ -12,6 +13,10 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import login
 import model
 from puzzle import MaybeGetPuzzle, NormalizeAnswer, NormalizeScore
+
+# Forbid more than this many guesses in this many seconds.
+SPAM_SECONDS = 60
+SPAM_GUESSES = 5
 
 
 class GuessPage(webapp.RequestHandler):
@@ -26,6 +31,7 @@ class GuessPage(webapp.RequestHandler):
     feedback = model.Feedback.get_or_insert(str(team.key()), parent=puzzle)
 
     props = {
+      "error": self.request.get_all("error"),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "puzzle": model.GetProperties(puzzle),
@@ -43,7 +49,7 @@ class GuessPage(webapp.RequestHandler):
           props["guesses"][-1]["is_correct"] = True
           props.setdefault("solve_time", guess.timestamp)
 
-    props["puzzle"]["number"] = int(self.request.get("p"))
+    props["puzzle"]["number"] = self.request.get("p")
 
     self.response.out.write(template.render("guess.dj.html", props))
 
@@ -56,10 +62,6 @@ class GuessPage(webapp.RequestHandler):
     puzzle = MaybeGetPuzzle(game, self.request)
     if not puzzle: return self.error(404)
 
-    if game.solving_enabled:
-      answer = NormalizeAnswer(self.request.get("answer", ""))
-      if answer: model.Guess(parent=puzzle, answer=answer, team=team).put()
-
     self.redirect("/guess?t=%d&p=%s" % (team.key().id(), self.request.get("p")))
 
     if self.request.get("comment", None) is not None:
@@ -68,9 +70,20 @@ class GuessPage(webapp.RequestHandler):
       if game.solving_enabled or game.voting_enabled:
         for s in range(len(feedback.scores)):
           feedback.scores[s] = NormalizeScore(self.request.get("score.%d" % s))
-
       feedback.put()
       self.redirect("/team?t=%d" % team.key().id())
+
+    answer = NormalizeAnswer(self.request.get("answer", ""))
+    if answer and game.solving_enabled:
+      start_time = datetime.datetime.now() - datetime.timedelta(0, SPAM_SECONDS)
+      guesses = model.Guess.all().ancestor(puzzle).filter("team", team.key())
+      recent = guesses.filter("timestamp >=", start_time).fetch(SPAM_GUESSES)
+      if answer in [g.answer for g in recent]:
+        self.response.headers["location"] += "&error=dup"
+      elif len(recent) >= SPAM_GUESSES:
+        self.response.headers["location"] += "&error=spam"
+      else:
+        model.Guess(parent=puzzle, answer=answer, team=team).put()
 
 
 app = webapp.WSGIApplication([("/guess", GuessPage)], debug=True)

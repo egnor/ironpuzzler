@@ -39,7 +39,7 @@ class LoginPage(webapp.RequestHandler):
     if not team: return
 
     props = {
-      "error": dict([(e, 1) for e in self.request.get_all("error")]),
+      "error": self.request.get_all("error"),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "target": self.request.get("u"),
@@ -63,7 +63,7 @@ class LoginPage(webapp.RequestHandler):
           "password_%d=%s; Max-Age=%d; Path=/" % (
           team.key().id(), urllib.quote(password), 7*24*60*60))
     else:
-      self.redirect("/login?t=%d&u=%s&error=pw" % (
+      self.redirect("/login?t=%d&u=%s&error=password" % (
           team.key().id(), urllib.quote(target)))
 
 

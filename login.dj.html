@@ -9,7 +9,7 @@
 
 <h2><a href="/">Iron Puzzler</a> &raquo; Login: {{ team.name }}</h2>
 
-{% if error.pw %}
+{% if "password" in error %}
   <h3 class="error">Invalid Password</h3>
 {% else %}
   <h3>Authentication Required</h3>

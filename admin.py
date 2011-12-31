@@ -54,8 +54,7 @@ class AdminPage(webapp.RequestHandler):
 
     n_by_key = dict([(k, n) for n, k in enumerate(game.puzzle_order)])
     solve_rank = {}
-    query = model.Guess.all().ancestor(game)
-    for guess in query.order("timestamp"):
+    for guess in model.Guess.all().ancestor(game).order("timestamp"):
       n = n_by_key[guess.key().parent()]
       puzzle = puzzles[n]
       guess_props = props_by_team[guess.team.key()]["puzzles"][n]

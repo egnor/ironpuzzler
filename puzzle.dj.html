@@ -22,14 +22,28 @@
 <h3>Title:
 <input type="text" name="title" value="{{ puzzle.title }}" size=30></h3>
 
-{% if game.results_enabled and comments %}
-<h3>Comments</h3>
+{% if game.results_enabled %}
+  <h3>Comments</h3>
   {% for comment in comments %}
     {% if not forloop.first %}
       <p style="padding-left: 15px">&middot; &middot; &middot;</p>
     {% endif %}
     {{ comment|linebreaks }}
+  {% empty %}
+    <p>No comments were left for this puzzle.</p>
   {% endfor %}
+
+  <h3>Votes</h3>
+  <table>
+    {% for scores in votes %}
+      {% if forloop.first %}
+        <tr> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
+      {% endif %}
+      <tr> {% for score in scores %} <td>{{ score }}</td> {% endfor %} </tr>
+    {% empty %}
+      <tr><td>No scores were entered for this puzzle.</td></tr>
+    {% endfor %}
+  </table>
 {% endif %}
 
 <h3>Answers</h3>

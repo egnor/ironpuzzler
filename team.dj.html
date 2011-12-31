@@ -6,7 +6,7 @@
 
 <h2><a href="/">Iron Puzzler</a> &raquo; {{ team.name }}</h2>
 
-{% if error.set_password %}
+{% if "set_password" in error %}
   <p class="error">New password confirmation did not match!</p>
 {% endif %}
 
@@ -17,12 +17,7 @@
 <input type="hidden" name="t" value="{{ team.key_id }}">
 
 <table>
-  <tr>
-    <td> </td>
-    <td>Fun</td>
-    <td>Pres.</td>
-    <td>Ingr.</td>
-  </tr>
+  <tr> <td> </td> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
 {% for puzzle in other_puzzles %}
   <tr>
     <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>

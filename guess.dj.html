@@ -22,46 +22,61 @@
   #{{ puzzle.number }} {{ puzzle.title }}
 </h2>
 
-<form action="/guess" method="post">
-<input type="hidden" name="t" value="{{ team.key_id }}">
-<input type="hidden" name="p" value="{{ puzzle.number }}">
-{% if game.solving_enabled and not solve_time %}
-  <h3>Solve:
-    <input type="text" name="answer" size=20>
-    <button>Submit</button>
-  </h3>
+{% if "spam" in error %}
+  <p class="error">Too many guesses submitted too quickly; try again later.</p>
+{% endif %}
 
-  <p>
-  {{ solve_teams|length|default:"No" }} team{{ solve_teams|length|pluralize }}
-  solved this puzzle so far.</p>
+{% if "dup" in error %}
+  <p class="error">That answer was already submitted recently.</p>
+{% endif %}
+
+{% if game.solving_enabled and not solve_time %}
+  <form action="/guess" method="post">
+    <input type="hidden" name="t" value="{{ team.key_id }}">
+    <input type="hidden" name="p" value="{{ puzzle.number }}">
+    <h3>Solve:
+      <input type="text" name="answer" size=20>
+      <button>Submit</button>
+    </h3>
+
+    <p>
+    {{ solve_teams|length|default:"No" }} team{{ solve_teams|length|pluralize }}
+    solved this puzzle so far.</p>
+  </form>
 {% endif %}
 
 {% if game.voting_enabled or game.results_enabled or solve_time %}
-  {% if game.solving_enabled %}
-    <h3 style="margin-bottom: 0">Draft Feedback</h3>
-    Optional now; you will have time to edit this feedback later.<br>
-  {% else %}
-    <h3>Feedback</h3>
-  {% endif %}
+  <form action="/guess" method="post">
+    <input type="hidden" name="t" value="{{ team.key_id }}">
+    <input type="hidden" name="p" value="{{ puzzle.number }}">
 
-  <p>
-  {% for score in feedback.scores %}
-    <label>{% cycle "Fun" "Presentation" "Ingredients" %}:
-    <input type="text" name="score.{{ forloop.counter0 }}" size="3"
-           {% if not game.solving_enabled and not game.voting_enabled %}
-             disabled="disabled"
-           {% endif %}
-           value="{% if score >= 0 %}{{ score }}{% endif %}">
-    </label>
-  {% endfor %}
-  (Numeric scores, 0.0-10.0)</p>
+    {% if game.solving_enabled %}
+      <h3 style="margin-bottom: 0">Draft Feedback</h3>
+      Optional now; you will have time to edit this feedback later.<br>
+    {% else %}
+      <h3>Feedback</h3>
+    {% endif %}
 
-  <textarea name="comment" cols="60" rows="6" class="leftside">
+    <p>
+      {% for score in feedback.scores %}
+        <label>{% cycle "Fun" "Presentation" "Ingredients" %}:
+        <input type="text" name="score.{{ forloop.counter0 }}" size="3"
+               {% if not game.solving_enabled and not game.voting_enabled %}
+                 disabled="disabled"
+               {% endif %}
+               value="{% if score >= 0 %}{{ score }}{% endif %}">
+        </label>
+      {% endfor %}
+      (Numeric scores, 0.0-10.0)
+    </p>
+
+    <textarea name="comment" cols="60" rows="6" class="leftside">
 {{ feedback.comment }}</textarea>
-  <p class="rightside">Comments for the authors.
-  Sent anonymously; sign your name and/or include scores if you wish.</p>
+    <p class="rightside">Comments for the authors.
+    Sent anonymously; sign your name and/or include scores if you wish.</p>
 
-  <button>Save {% if game.solving_enabled %} draft {% endif %}</button>
+    <button>Save {% if game.solving_enabled %} draft {% endif %}</button>
+  </form>
 
   <h3>Solution</h3>
 

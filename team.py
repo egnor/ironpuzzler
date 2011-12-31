@@ -12,8 +12,6 @@ import model
 import login
 from puzzle import NormalizeScore
 
-FETCH = 1000
-
 
 class TeamPage(webapp.RequestHandler):
   def get(self):
@@ -22,7 +20,7 @@ class TeamPage(webapp.RequestHandler):
     if not team: return
 
     props = {
-      "error": dict([(e, 1) for e in self.request.get_all("error")]),
+      "error": self.request.get_all("error"),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "team_puzzles": [],
@@ -71,14 +69,15 @@ class TeamPage(webapp.RequestHandler):
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 
-    sr = range(len(model.Feedback().scores))
-    for n, pk in enumerate(game.puzzle_order):
-      score = [self.request.get("score.%d.%d" % (n + 1, s)) for s in sr]
-      orig = [self.request.get("score.%d.%d.orig" % (n + 1, s)) for s in sr]
-      if score != orig:
-        feedback = model.Feedback.get_or_insert(str(team.key()), parent=pk)
-        for s in sr: feedback.scores[s] = NormalizeScore(score[s])
-        feedback.put()
+    if game.voting_enabled:
+      sr = range(len(model.Feedback().scores))
+      for n, pk in enumerate(game.puzzle_order):
+        score = [self.request.get("score.%d.%d" % (n + 1, s)) for s in sr]
+        orig = [self.request.get("score.%d.%d.orig" % (n + 1, s)) for s in sr]
+        if score != orig:
+          feedback = model.Feedback.get_or_insert(str(team.key()), parent=pk)
+          for s in sr: feedback.scores[s] = NormalizeScore(score[s])
+          feedback.put()
 
     self.redirect("/team?t=%d" % team.key().id())
     team.name = self.request.get("name") or team.name

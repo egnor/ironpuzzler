@@ -45,15 +45,18 @@ class PuzzlePage(webapp.RequestHandler):
       "team": model.GetProperties(team),
       "puzzle": model.GetProperties(puzzle),
       "comments": [],
+      "votes": [],
     }
 
+    no_scores = model.Feedback().scores
     for feedback in model.Feedback.all().ancestor(puzzle):
       comment = (feedback.comment or "").strip()
       if comment: props["comments"].append(comment)
+      if feedback.scores != no_scores: props["votes"].append(feedback.scores)
+
     props["comments"].sort(key=unicode.lower)
-
+    props["votes"].sort(reverse=True)
     props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
-
     props["puzzle"]["number"] = self.request.get("p")
 
     self.response.out.write(template.render("puzzle.dj.html", props))
