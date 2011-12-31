@@ -34,7 +34,7 @@
 
 <h3>Answers</h3>
 
-<input type="hidden" name="answers_orig" value="{{ puzzle.answers|urlencode }}">
+<input type="hidden" name="answers.orig" value="{{ puzzle.answers|urlencode }}">
 <textarea name="answers" wrap="off" cols="30" rows="5" class="leftside">
 {{ puzzle.answers }}</textarea>
 <p class="rightside">Correct answers to the puzzle, one per line.
@@ -42,7 +42,7 @@ Capitalization, punctuation, and spacing are ignored.</p>
 
 <h3>Errata</h3>
 
-<input type="hidden" name="errata_orig" value="{{ puzzle.errata|urlencode }}">
+<input type="hidden" name="errata.orig" value="{{ puzzle.errata|urlencode }}">
 <textarea name="errata" cols="60" rows="6" class="leftside">
 {{ puzzle.errata }}</textarea>
 <p class="rightside">Notes to address problems discovered on game day.
@@ -50,7 +50,7 @@ Visible to all teams.</p>
 
 <h3>Solution</h3>
 
-<input type="hidden" name="solution_orig" value="{{ puzzle.solution|urlencode }}">
+<input type="hidden" name="solution.orig" value="{{ puzzle.solution|urlencode }}">
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
 <p class="rightside">Complete walkthrough.

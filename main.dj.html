@@ -9,24 +9,43 @@
 
 <div class="pagecontent">
 
-{% if game.ingredients_visible %}
-  <h3>Secret Ingredients</h3>
-  {% for ingredient in game.ingredients %}
-    <h4>{{ ingredient }}</h4>
-  {% endfor %}
-{% endif %}
-
 {% if game.login_enabled %}
 <form action="/login" method="post">
-<h3>Team Login</h3>
+<h3>Login:
 <select name="t">
-{% for team in teams %}
+{% for team in teams|dictsort:"name" %}
   <option value="{{ team.key_id }}">{{ team.name }}</option>
 {% endfor %}
 </select>
 <label>password: <input type="password" name="pw" size=10></label>
 <button>Login</button>
 </form>
+{% endif %}
+
+{% if game.solving_enabled %}
+<h3>Standings</h3>
+
+<table>
+  {% for team in teams %}
+    <tr>
+      <td>{{ team.name }}</td>
+      <td>
+        {{ team.solves|length|default:"no" }}
+        solve{{ team.solves|length|pluralize }}
+      </td>
+      <td>
+        {% if team.solve_time %} {{ team.solve_time|timesince }} ago {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if game.ingredients_visible %}
+  <h3>Secret Ingredients</h3>
+  {% for ingredient in game.ingredients %}
+    <h4>{{ ingredient }}</h4>
+  {% endfor %}
 {% endif %}
 
 <h3>About</h3>

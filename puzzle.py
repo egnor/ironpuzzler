@@ -24,6 +24,12 @@ def NormalizeAnswer(answer):
   return re.sub('[\W]+', '', answer).upper()
 
 
+def NormalizeScore(score):
+  try: score = float(score)
+  except: return -1.0
+  return (score < 0.0 or score > 10.0) and -1.0 or score
+
+
 class PuzzlePage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
@@ -42,7 +48,7 @@ class PuzzlePage(webapp.RequestHandler):
     }
 
     for feedback in model.Feedback.all().ancestor(puzzle):
-      comment = feedback.comment.strip()
+      comment = (feedback.comment or "").strip()
       if comment: props["comments"].append(comment)
     props["comments"].sort(key=unicode.lower)
 
@@ -65,8 +71,8 @@ class PuzzlePage(webapp.RequestHandler):
 
     updates = {}
     for arg in self.request.arguments():
-      if arg.endswith("_orig"): continue
-      orig_value = urllib.unquote(self.request.get(arg + "_orig", ""))
+      if arg.endswith(".orig"): continue
+      orig_value = urllib.unquote(self.request.get(arg + ".orig", ""))
       new_value = self.request.get(arg)
       if new_value != orig_value: updates[arg] = new_value
 

@@ -30,12 +30,16 @@
     <input type="text" name="answer" size=20>
     <button>Submit</button>
   </h3>
+
+  <p>
+  {{ solve_teams|length|default:"No" }} team{{ solve_teams|length|pluralize }}
+  solved this puzzle so far.</p>
 {% endif %}
 
 {% if game.voting_enabled or game.results_enabled or solve_time %}
   {% if game.solving_enabled %}
     <h3 style="margin-bottom: 0">Draft Feedback</h3>
-    <em>Optional now; you will have time to edit this feedback later.</em><br>
+    Optional now; you will have time to edit this feedback later.<br>
   {% else %}
     <h3>Feedback</h3>
   {% endif %}
@@ -50,12 +54,12 @@
            value="{% if score >= 0 %}{{ score }}{% endif %}">
     </label>
   {% endfor %}
-  <em>(Numeric scores, 0.0-10.0)</em></p>
+  (Numeric scores, 0.0-10.0)</p>
 
   <textarea name="comment" cols="60" rows="6" class="leftside">
 {{ feedback.comment }}</textarea>
-  <p class="rightside">Free form comments for the puzzle authors.
-  Delivered anonymously; sign if you wish.</p>
+  <p class="rightside">Comments for the authors.
+  Sent anonymously; sign your name and/or include scores if you wish.</p>
 
   <button>Save {% if game.solving_enabled %} draft {% endif %}</button>
 
@@ -72,11 +76,10 @@
 
 <h3>History</h3>
 
-<table cellpadding=0 cellspacing=0 border=0>
+<table>
   {% for guess in guesses %}
     <tr>
       <td><b>{{ guess.answer }}</b></td>
-      <td style="width: 1em">&nbsp;</td>
       <td>
         {% if guess.is_correct %}
           <b class="guess_correct">CORRECT</b>
@@ -84,7 +87,6 @@
           <span class="guess_incorrect">incorrect</span>
         {% endif %}
       </td>
-      <td style="width: 1em">&nbsp;</td>
       <td>{{ guess.timestamp|timesince }} ago</td>
     </tr>
   {% empty %}

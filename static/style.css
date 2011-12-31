@@ -14,6 +14,10 @@ form { margin: 0 0 0 0; }
 
 h1 em,h2 em,h3 em,h4 em { font-weight: normal; }
 
+table { border-collapse: collapse; border-spacing: 0; }
+
+td, th { padding: 0 1em 0 0; }
+
 .pageheader {
   background-color: black;
   height: 200px;

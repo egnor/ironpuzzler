@@ -11,7 +11,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
 import model
-from puzzle import MaybeGetPuzzle, NormalizeAnswer
+from puzzle import MaybeGetPuzzle, NormalizeAnswer, NormalizeScore
 
 
 class GuessPage(webapp.RequestHandler):
@@ -31,14 +31,17 @@ class GuessPage(webapp.RequestHandler):
       "puzzle": model.GetProperties(puzzle),
       "feedback": model.GetProperties(feedback),
       "guesses": [],
+      "solve_teams": set(),
     }
 
-    query = model.Guess.all().ancestor(puzzle)
-    for guess in query.filter("team", team.key()).order("-timestamp"):
-      props["guesses"].append(model.GetProperties(guess))
+    for guess in model.Guess.all().ancestor(puzzle).order("-timestamp"):
       if guess.answer in puzzle.answers:
-        props["guesses"][-1]["is_correct"] = True
-        props.setdefault("solve_time", guess.timestamp)
+        props["solve_teams"].add(guess.team.key())
+      if guess.team.key() == team.key():
+        props["guesses"].append(model.GetProperties(guess))
+        if guess.answer in puzzle.answers:
+          props["guesses"][-1]["is_correct"] = True
+          props.setdefault("solve_time", guess.timestamp)
 
     props["puzzle"]["number"] = int(self.request.get("p"))
 
@@ -64,9 +67,7 @@ class GuessPage(webapp.RequestHandler):
       feedback.comment = self.request.get("comment")
       if game.solving_enabled or game.voting_enabled:
         for s in range(len(feedback.scores)):
-          score = self.request.get("score.%d" % s, -1.0) 
-          try: feedback.scores[s] = float(score)
-          except: feedback.scores[s] = -1.0
+          feedback.scores[s] = NormalizeScore(self.request.get("score.%d" % s))
 
       feedback.put()
       self.redirect("/team?t=%d" % team.key().id())

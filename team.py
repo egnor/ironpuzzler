@@ -10,6 +10,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import model
 import login
+from puzzle import NormalizeScore
 
 FETCH = 1000
 
@@ -30,11 +31,12 @@ class TeamPage(webapp.RequestHandler):
     }
 
     puzzle_props = {}
-    for number, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
+    for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
       pp = puzzle_props[puzzle.key()] = model.GetProperties(puzzle)
-      pp["number"] = number + 1
+      pp["number"] = n + 1
       pp["guess_count"] = 0
-      pp["answer_set"] = set(puzzle.answers)
+      pp["answers"] = set(puzzle.answers)
+      pp["solve_teams"] = set()
       if pp.get("errata"):
         props["errata_puzzles"].append(pp)
       if puzzle.parent_key() == team.key():
@@ -50,11 +52,15 @@ class TeamPage(webapp.RequestHandler):
       if pp: pp["feedback"] = model.GetProperties(
           feedback or model.Feedback(key=key))
 
-    query = model.Guess.all().ancestor(game)
-    for guess in query.filter("team", team.key()):
+    for guess in model.Guess.all().ancestor(game):
       pp = puzzle_props.get(guess.parent_key())
-      if pp:
-        if guess.answer in pp["answer_set"]: pp["solve_time"] = guess.timestamp
+      if not pp: continue
+
+      if guess.answer in pp["answers"]:
+        pp["solve_teams"].add(guess.team.key())
+
+      if guess.team.key() == team.key():
+        if guess.answer in pp["answers"]: pp["solve_time"] = guess.timestamp
         pp["guess_count"] += 1
 
     self.response.out.write(template.render("team.dj.html", props))
@@ -64,6 +70,15 @@ class TeamPage(webapp.RequestHandler):
     game = model.GetGame()
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
+
+    sr = range(len(model.Feedback().scores))
+    for n, pk in enumerate(game.puzzle_order):
+      score = [self.request.get("score.%d.%d" % (n + 1, s)) for s in sr]
+      orig = [self.request.get("score.%d.%d.orig" % (n + 1, s)) for s in sr]
+      if score != orig:
+        feedback = model.Feedback.get_or_insert(str(team.key()), parent=pk)
+        for s in sr: feedback.scores[s] = NormalizeScore(score[s])
+        feedback.put()
 
     self.redirect("/team?t=%d" % team.key().id())
     team.name = self.request.get("name") or team.name

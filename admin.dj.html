@@ -28,21 +28,19 @@
 
 <h3>Teams and puzzles</h3>
 
-<table cellpadding=0 cellspacing=0 border=0>
-<tr>
-  <td> </td>
-  {% for puzzle in puzzles %}
-    <td style="width: 0.5em">&nbsp;</td>
-    <td align="center">
-      <a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">#{{ puzzle.number }}</a>
-    </td>
-  {% endfor %}
-</tr>
+<table>
+  <tr>
+    <td> </td>
+    {% for puzzle in puzzles %}
+      <td align="center">
+        <a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">#{{ puzzle.number }}</a>
+      </td>
+    {% endfor %}
+  </tr>
   {% for team in teams %}
     <tr>
       <td><a href="/team?t={{ team.key_id }}">{{ team.name }}</a></td>
       {% for puzzle in team.puzzles %}
-        <td></td>
         <td align="center">
           {% if puzzle.name %}
             <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}" 
@@ -76,14 +74,11 @@
   {% endfor %}
 </table>
 
-<div style="margin-top: 5">
+<p>
   <label>Add team: <input type="text" name="new_team" id="add_team" size="25"></label>
   <label>pw: <input type="text" name="new_password" size="10"></label>
-</div>
+</p>
 
-<h3>Game State</h3>
-
-<p>
 {% if puzzles %}
   <label><input type="checkbox" name="assign_numbers" value="true">
   Scramble and reassign puzzle numbers
@@ -99,26 +94,28 @@
     <input type="hidden" name="confirm_numbers" value="true">
   {% endif %}
 {% endif %}
-{% if teams %}
-  <label><input type="checkbox" name="login_enabled" value="true"
-    {% if game.login_enabled %} checked {% endif %} >
-  Enable team logins
-  </label><br>
-{% endif %}
-{% if teams and puzzles %}
-  <label><input type="checkbox" name="solving_enabled" value="true"
-    {% if game.solving_enabled %} checked {% endif %} >
-  Enable answer submission
-  </label><br>
-  <label><input type="checkbox" name="voting_enabled" value="true"
-    {% if game.voting_enabled %} checked {% endif %} >
-  Enable voting on puzzles
-  </label><br>
-  <label><input type="checkbox" name="results_enabled" value="true"
-    {% if game.results_enabled %} checked {% endif %} >
-  Publish final results
-  </label><br>
-{% endif %}
+
+<h3>Game State</h3>
+
+<p>
+
+<label><input type="checkbox" name="login_enabled" value="true"
+  {% if game.login_enabled %} checked {% endif %} >
+Enable team logins
+</label><br>
+<label><input type="checkbox" name="solving_enabled" value="true"
+  {% if game.solving_enabled %} checked {% endif %} >
+Enable answer submission
+</label><br>
+<label><input type="checkbox" name="voting_enabled" value="true"
+  {% if game.voting_enabled %} checked {% endif %} >
+Enable voting on puzzles
+</label><br>
+<label><input type="checkbox" name="results_enabled" value="true"
+  {% if game.results_enabled %} checked {% endif %} >
+Publish final results
+</label><br>
+
 </p>
 
 <h3>Access to this admin page</h3>

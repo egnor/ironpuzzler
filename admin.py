@@ -90,7 +90,8 @@ class AdminPage(webapp.RequestHandler):
       team.put()
       for pt in PUZZLE_TYPES: model.Puzzle(parent=team, key_name=pt).put()
 
-    if self.request.get("assign_numbers") and self.request.get("confirm_numbers"):
+    if self.request.get("assign_numbers") and \
+       self.request.get("confirm_numbers"):
       type_puzzles = {}
       for p in model.Puzzle.all(keys_only=True).ancestor(game):
         type_puzzles.setdefault(p.name(), []).append(p)

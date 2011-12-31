@@ -16,28 +16,33 @@
 <form action="/team" method="post">
 <input type="hidden" name="t" value="{{ team.key_id }}">
 
-<p><em>Scores are numeric, 0.0-10.0.  Click the puzzle to see the
-solution or leave comments for the author.</em></p>
-
-<table cellpadding=0 cellspacing=0 border=0>
+<table>
   <tr>
-    <td> </td><td> </td>
-    <td>Fun&nbsp;</td>
-    <td>Pres.&nbsp;</td>
-    <td>Ingr.&nbsp;</td>
+    <td> </td>
+    <td>Fun</td>
+    <td>Pres.</td>
+    <td>Ingr.</td>
   </tr>
 {% for puzzle in other_puzzles %}
   <tr>
-    <td><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} {{ puzzle.title }}</a></td>
-    <td style="width: 1em">&nbsp;</td>
+    <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>
     {% for score in puzzle.feedback.scores %}
       <td>
+        <input type="hidden"
+               name="score.{{ puzzle.number }}.{{ forloop.counter0 }}.orig"
+               value="{% if score >= 0 %}{{ score }}{% endif %}">
         <input type="text" size="3"
                {% if not game.voting_enabled %} disabled="disabled" {% endif %}
                name="score.{{ puzzle.number }}.{{ forloop.counter0 }}"
-               value="{% if score >= 0 %}{{ score }}{% endif %}">&nbsp;
+               value="{% if score >= 0 %}{{ score }}{% endif %}">
       </td>
     {% endfor %}
+    {% if forloop.first %}
+    <td valign="top" rowspan="{{ other_puzzles|length }}">
+      (Numeric scores, 0.0-10.0)
+      <p>Click the puzzle to see the solution or leave the author comments.</p>
+    </td>
+    {% endif %}
   </tr>
 {% endfor %}
 </table>
@@ -52,11 +57,20 @@ solution or leave comments for the author.</em></p>
 {% if game.solving_enabled %}
 <h3>Solving</h3>
 
-<table cellpadding=0 cellspacing=0 border=0>
+<table>
 {% for puzzle in other_puzzles %}
   <tr>
-    <td>#{{ puzzle.number }} {{ puzzle.title }}</td>
-    <td style="width: 1em">&nbsp;</td>
+    <td>
+      #{{ puzzle.number }} {{ puzzle.title }}
+    </td>
+    <td>
+      {% if puzzle.solve_teams %}
+        <span title="{{ puzzle.solve_teams|length }} team{{ puzzle.solve_teams|length|pluralize }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;">
+          {{ puzzle.solve_teams|length }}
+          solve{{ puzzle.solve_teams|length|pluralize }}
+        </span>
+      {% endif %}
+    </td>
     <td>
       <form action="/guess" method="post">
         {% if puzzle.solve_time %}
