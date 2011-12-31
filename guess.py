@@ -16,7 +16,7 @@ from puzzle import MaybeGetPuzzle, NormalizeAnswer, NormalizeScore
 
 # Forbid more than this many guesses in this many seconds.
 SPAM_SECONDS = 60
-SPAM_GUESSES = 5
+SPAM_GUESSES = 2
 
 
 class GuessPage(webapp.RequestHandler):
