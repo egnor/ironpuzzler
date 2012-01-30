@@ -50,7 +50,7 @@
           {% if puzzle.team.key_id == team.key_id %}
             <td align="center" class="puzzle_author" title="{{ team.name }} wrote #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;"> A </td>
           {% else %} {% if puzzle.score %}
-            <td align="center" class="guess_correct" title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; &#10;{{ puzzle.solve_time|timesince }} ago">
+            <td align="center" class="guess_correct" title="{{ team.name }} earned {{ puzzle.score }} points for solving&#10;#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; {{ puzzle.solve_time|timesince }} ago">
               {{ puzzle.score }}
             </td>
           {% else %}
@@ -58,11 +58,11 @@
           {% endif %} {% endif %}
         {% endfor %}
         <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} (&#215;2)&#10;Fun points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.0 }}&#215;2</td>
-        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} &#10;Presentation points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.1 }}</td>
-        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} &#10;Ingredients points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.2 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.1 }} &#10;Presentation points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.1 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.2 }} &#10;Ingredients points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.2 }}</td>
         <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} (&#215;2)&#10;Fun points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.0 }}&#215;2</td>
-        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} &#10;Presentation points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.1 }}</td>
-        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} &#10;Ingredients points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.2 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.1 }} &#10;Presentation points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.1 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.2 }} &#10;Ingredients points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.2 }}</td>
         {% if team.bonus %}
           <td align="center" title="{{ team.name }} received {{ team.bonus }}&#10;bonus points from Game Control">{{ team.bonus }}</td>
         {% else %}

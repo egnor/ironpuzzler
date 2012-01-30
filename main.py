@@ -21,6 +21,7 @@ class MainPage(webapp.RequestHandler):
     for team in model.Team.all().ancestor(game):
       team_props = team_by_key[team.key()] = model.GetProperties(team)
       team_props["solve_count"] = 0
+      team_props["solve_time"] = 0
       props["teams"].append(team_props)
 
     puzzle_by_key = {}
@@ -76,7 +77,7 @@ class MainPage(webapp.RequestHandler):
           guess_props["score"] = points
           team_score += points
 
-      team_score += team_props.get("bonus", 0)
+      team_score += (team_props.get("bonus") or 0) 
       team_props["score"] = team_score
       team_props["minus_score"] = -team_score
 
