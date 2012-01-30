@@ -40,7 +40,9 @@
         <tr> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
       {% endif %}
       <tr> {% for score in scores %}
-        <td>{% if score >= 0 %}{{ score }}{% else %}--{% endif %}</td>
+        <td align="center">
+          {% if score >= 0 %}{{ score }}{% else %}--{% endif %}
+        </td>
       {% endfor %} </tr>
     {% empty %}
       <tr><td>No scores were entered for this puzzle.</td></tr>

@@ -60,8 +60,11 @@ class PuzzlePage(webapp.RequestHandler):
       if comment: props["comments"].append(comment)
       if feedback.scores != no_scores: props["votes"].append(feedback.scores)
 
-    for guess in model.Guess.all().ancestor(puzzle):
-      if guess.answer in puzzle.answers: props["solves"].append(guess)
+    solvers = {}
+    for guess in model.Guess.all().ancestor(puzzle).order("timestamp"):
+      if guess.answer in puzzle.answers and not solvers.get(guess.team.key()):
+        solvers[guess.team.key()] = 1
+        props["solves"].append(guess)
 
     self.response.out.write(template.render("puzzle.dj.html", props))
 
