@@ -22,27 +22,81 @@
 </form>
 {% endif %}
 
-{% if game.solving_enabled %}
-<h3>Standings</h3>
+{% if game.results_enabled %}
+  <h3>Final results</h3>
 
-<table>
-  {% for team in teams %}
+  <table>
     <tr>
-      <td>{{ team.name }}</td>
-      <td>
-        {{ team.solves|length|default:"no" }}
-        solve{{ team.solves|length|pluralize }}
-      </td>
-      <td>
-        {% if team.solve_time %} {{ team.solve_time|timesince }} ago {% endif %}
-      </td>
+      <td> </td>
+      <td align="center"><b>Score</b></td>
+      {% for puzzle in puzzles %}
+        <td align="center" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">
+          #{{ puzzle.number }}
+        </td>
+      {% endfor %}
+      <td align="center" title="Nonpaper Fun score">NPF</td>
+      <td align="center" title="Nonpaper Presentation score">NPP</td>
+      <td align="center" title="Nonpaper Ingredients score">NPI</td>
+      <td align="center" title="Paper Fun score">PF</td>
+      <td align="center" title="Paper Presentation score">PP</td>
+      <td align="center" title="Paper Ingredients score">PI</td>
+      <td align="center" title="Extra bonus points">GC</td>
     </tr>
-  {% endfor %}
-</table>
+    {% for team in teams|dictsort:"minus_score" %}
+      <tr>
+        <td><nobr>{{ forloop.counter }}. {{ team.name }}</nobr></td>
+        <td align="center"><b>{{ team.score }}</b></td>
+        {% for puzzle in team.puzzles %}
+          {% if puzzle.team.key_id == team.key_id %}
+            <td align="center" class="puzzle_author" title="{{ team.name }} wrote #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;"> A </td>
+          {% else %} {% if puzzle.score %}
+            <td align="center" class="guess_correct" title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; &#10;{{ puzzle.solve_time|timesince }} ago">
+              {{ puzzle.score }}
+            </td>
+          {% else %}
+            <td align="center" class="guess_none"> -- </td>
+          {% endif %} {% endif %}
+        {% endfor %}
+        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} (&#215;2)&#10;Fun points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.0 }}&#215;2</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} &#10;Presentation points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.1 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.nonpaper.scores.0 }} &#10;Ingredients points for #{{ team.author.nonpaper.number }} &quot;{{ team.author.nonpaper.title }}&quot;">{{ team.author.nonpaper.scores.2 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} (&#215;2)&#10;Fun points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.0 }}&#215;2</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} &#10;Presentation points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.1 }}</td>
+        <td align="center" title="{{ team.name }} earned {{ team.author.paper.scores.0 }} &#10;Ingredients points for #{{ team.author.paper.number }} &quot;{{ team.author.paper.title }}&quot;">{{ team.author.paper.scores.2 }}</td>
+        {% if team.bonus %}
+          <td align="center" title="{{ team.name }} received {{ team.bonus }}&#10;bonus points from Game Control">{{ team.bonus }}</td>
+        {% else %}
+          <td align="center" class="guess_none"> -- </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endif %}
+
+{% if game.solving_enabled %}
+  <h3>Standings</h3>
+
+  <table>
+    {% for team in teams %}
+      <tr>
+        <td>{{ forloop.counter }}. {{ team.name }}</td>
+        <td>
+          {{ team.solve_count|default:"no" }}
+          solve{{ team.solve_count|pluralize }}
+        </td>
+        <td>
+          {% if team.solve_time %}
+            {{ team.solve_time|timesince }} ago
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
 {% endif %}
 
 {% if game.ingredients_visible %}
-  <h3>Secret Ingredients</h3>
+  <h3>Secret ingredients</h3>
   {% for ingredient in game.ingredients %}
     <h4>{{ ingredient }}</h4>
   {% endfor %}

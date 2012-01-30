@@ -31,29 +31,35 @@
 <table>
   <tr>
     <td> </td>
+    <td>Bonus</td>
     {% for puzzle in puzzles %}
       <td align="center">
         <a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">#{{ puzzle.number }}</a>
       </td>
     {% endfor %}
   </tr>
-  {% for team in teams %}
+  {% for team in teams|dictsort:"name" %}
     <tr>
-      <td><a href="/team?t={{ team.key_id }}">{{ team.name }}</a></td>
+      <td>
+        <nobr><a href="/team?t={{ team.key_id }}">{{ team.name }}</a></nobr>
+      </td>
+      <td>
+        <input type="text" size="3" name="bonus.{{ team.key_id }}"
+               value="{{ team.bonus|default:0.0 }}">
+      </td>
       {% for puzzle in team.puzzles %}
         <td align="center">
-          {% if puzzle.name %}
+          {% if puzzle.team.key_id == team.key_id %}
             <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}" 
-               class="puzzle_author"
-               title="{{ team.name }} wrote #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;">
+               class="puzzle_author" title="{{ team.name }} wrote #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;">
               A
             </a>
           {% else %}
             {% if puzzle.solve_rank %}
               <a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}"
                  class="guess_correct"
-                 title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; {{ puzzle.solve_time|timesince }} ago ({{ puzzle.guess_count }} in attempt{{ puzzle.guess_count|pluralize }})">
-                #{{ puzzle.solve_rank }}
+                 title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; {{ puzzle.solve_rank }}&#10;{{ puzzle.solve_time|timesince }} ago ({{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }})">
+                {{ puzzle.solve_rank }}
               </a>
             {% else %} {% if puzzle.guess_count %}
               <a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}"

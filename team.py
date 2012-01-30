@@ -31,10 +31,14 @@ class TeamPage(webapp.RequestHandler):
     puzzle_props = {}
     for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
       pp = puzzle_props[puzzle.key()] = model.GetProperties(puzzle)
-      pp["number"] = n + 1
-      pp["guess_count"] = 0
-      pp["answers"] = set(puzzle.answers)
-      pp["solve_teams"] = set()
+      pp.update({
+        "number": n + 1,
+        "guess_count": 0,
+        "answers": set(puzzle.answers),
+        "solve_teams": set(),
+        "comment_count": 0,
+        "vote_count": 0,
+      })
       if pp.get("errata"):
         props["errata_puzzles"].append(pp)
       if puzzle.parent_key() == team.key():
@@ -49,6 +53,13 @@ class TeamPage(webapp.RequestHandler):
       pp = puzzle_props.get(key.parent())
       if pp: pp["feedback"] = model.GetProperties(
           feedback or model.Feedback(key=key))
+
+    no_scores = model.Feedback().scores
+    for review in model.Feedback.all().ancestor(team):
+      pp = puzzle_props.get(review.key().parent())
+      if pp:
+        if review.comment and review.comment.strip(): pp["comment_count"] += 1
+        if review.scores != no_scores: pp["vote_count"] += 1
 
     for guess in model.Guess.all().ancestor(game):
       pp = puzzle_props.get(guess.parent_key())

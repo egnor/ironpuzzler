@@ -46,6 +46,18 @@
   </table>
 {% endif %}
 
+{% if solves %}
+<h3>Solves</h3>
+<table>
+  {% for solve in solves|dictsort:"timestamp" %}
+    <tr>
+      <td>{{ forloop.counter }}. {{ solve.team.name }}</td>
+      <td>{{ solve.timestamp|timesince }} ago</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
 <h3>Answers</h3>
 
 <input type="hidden" name="answers.orig" value="{{ puzzle.answers|urlencode }}">
@@ -68,7 +80,7 @@ Visible to all teams.</p>
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
 <p class="rightside">Complete walkthrough.
-Visible to all teams once voting starts.</p>
+Visible to all teams once they solve the puzzle or voting starts.</p>
 
 <h3><button>Submit changes</button></h3>
 </form>

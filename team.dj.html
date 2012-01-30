@@ -11,6 +11,7 @@
 {% endif %}
 
 {% if game.voting_enabled or game.results_enabled %}
+
 <h3>Voting</h3>
 
 <form action="/team" method="post">
@@ -34,7 +35,7 @@
     {% endfor %}
     {% if forloop.first %}
     <td valign="top" rowspan="{{ other_puzzles|length }}">
-      (Numeric scores, 0.0-10.0)
+      (Numeric scores, 0.0-5.0)
       <p>Click the puzzle to see the solution or leave the author comments.</p>
     </td>
     {% endif %}
@@ -47,9 +48,10 @@
 {% endif %}
 </form>
 
-{% endif %}  {# voting_enabled #}
+{% endif %}  {# voting_enabled or results_enabled #}
 
 {% if game.solving_enabled %}
+
 <h3>Solving</h3>
 
 <table>
@@ -104,15 +106,46 @@
 
 <h3>Your puzzles</h3>
 
-{% for puzzle in team_puzzles %}
-  <h4 class="item">
-    <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}">
-      #{{ puzzle.number }} {{ puzzle.title }}</a>
-    ({{ puzzle.key_name }})
-  </h4>
-{% empty %}
-  <p><em>Your puzzles have not been assigned yet.</em></p>
-{% endfor %}
+<table>
+  {% for puzzle in team_puzzles %}
+    <tr>
+      <td>
+        <b>
+          {% if game.solving_enabled %}
+            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}"
+               title="#{{ puzzle.number }} {{ puzzle.title }}">
+              {{ puzzle.key_name|capfirst }}</a>
+          {% else %}
+            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}">
+              #{{ puzzle.number }} {{ puzzle.title }}</a>
+            ({{ puzzle.key_name }})
+          {% endif %}
+        </b>
+      </td>
+      <td>
+        {% if puzzle.solve_teams %}
+          {{ puzzle.solve_teams|length }}
+          solve{{ puzzle.solve_teams|length|pluralize }}
+        {% endif %}
+      </td>
+      {% if game.results_enabled %}
+        <td>
+          {% if puzzle.vote_count %}
+            {{ puzzle.vote_count }} vote{{ puzzle.vote_count|pluralize }}
+          {% endif %}
+        </td>
+        <td>
+          {% if puzzle.comment_count %}
+            {{ puzzle.comment_count }}
+            comment{{ puzzle.comment_count|pluralize }}
+          {% endif %}
+        </td>
+      {% endif %}
+    </tr>
+  {% empty %}
+    <tr><td><em>Your puzzles have not been assigned yet.</em></td></tr>
+  {% endfor %}
+</table>
 
 {% if game.ingredients_visible %}
   <p>Ingredients: <b>{{ game.ingredients|join:", " }}</b></p>

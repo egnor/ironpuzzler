@@ -27,7 +27,7 @@ def NormalizeAnswer(answer):
 def NormalizeScore(score):
   try: score = float(score)
   except: return -1.0
-  return (score < 0.0 or score > 10.0) and -1.0 or score
+  return (score < 0.0 or score > 5.0) and -1.0 or score
 
 
 class PuzzlePage(webapp.RequestHandler):
@@ -46,7 +46,13 @@ class PuzzlePage(webapp.RequestHandler):
       "puzzle": model.GetProperties(puzzle),
       "comments": [],
       "votes": [],
+      "solves": [],
     }
+
+    props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
+    props["puzzle"]["number"] = self.request.get("p")
+    props["comments"].sort(key=unicode.lower)
+    props["votes"].sort(reverse=True)
 
     no_scores = model.Feedback().scores
     for feedback in model.Feedback.all().ancestor(puzzle):
@@ -54,10 +60,8 @@ class PuzzlePage(webapp.RequestHandler):
       if comment: props["comments"].append(comment)
       if feedback.scores != no_scores: props["votes"].append(feedback.scores)
 
-    props["comments"].sort(key=unicode.lower)
-    props["votes"].sort(reverse=True)
-    props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
-    props["puzzle"]["number"] = self.request.get("p")
+    for guess in model.Guess.all().ancestor(puzzle):
+      if guess.answer in puzzle.answers: props["solves"].append(guess)
 
     self.response.out.write(template.render("puzzle.dj.html", props))
 

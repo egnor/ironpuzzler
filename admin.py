@@ -20,6 +20,11 @@ def IsUserAdmin(game):
   return user and (user.email() in game.admin_users)
 
 
+def Ordinal(n):
+  if n % 100 // 10 == 1: return "%dth" % n
+  return "%d%s" % (n, { 1: "st", 2: "nd", 3: "rd" }.get(n % 10, "th"))
+
+
 class AdminPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
@@ -35,35 +40,33 @@ class AdminPage(webapp.RequestHandler):
       "teams": [],
     }
 
-    puzzles = model.Puzzle.get(game.puzzle_order)
-    props_by_team = {}
-    for team in model.Team.all().ancestor(game).order("name"):
-      team_props = props_by_team[team.key()] = model.GetProperties(team)
-      team_props["puzzles"] = [{
-          "number": n + 1,
-          "title": puzzle.title,
-          "name": (puzzle.key().parent() == team.key()) and puzzle.key().name(),
-        } for n, puzzle in enumerate(puzzles)]
+    team_by_key = {}
+    for team in model.Team.all().ancestor(game):
+      team_props = team_by_key[team.key()] = model.GetProperties(team)
       props["teams"].append(team_props)
 
-    for n, puzzle in enumerate(puzzles):
-      puzzle_props = model.GetProperties(puzzle)
+    puzzle_by_key = {}
+    for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
+      puzzle_props = puzzle_by_key[puzzle.key()] = model.GetProperties(puzzle)
+      puzzle_props["solve_count"] = 0
       puzzle_props["number"] = n + 1
-      puzzle_props["team"] = props_by_team[puzzle.key().parent()]
+      puzzle_props["team"] = team_by_key[puzzle.key().parent()]
       props["puzzles"].append(puzzle_props)
 
-    n_by_key = dict([(k, n) for n, k in enumerate(game.puzzle_order)])
-    solve_rank = {}
+    for team_props in props["teams"]:
+      team_props["puzzles"] = [pp.copy() for pp in props["puzzles"]]
+      for gp in team_props["puzzles"]: gp["guess_count"] = 0
+
     for guess in model.Guess.all().ancestor(game).order("timestamp"):
-      n = n_by_key[guess.key().parent()]
-      puzzle = puzzles[n]
-      guess_props = props_by_team[guess.team.key()]["puzzles"][n]
-      guess_props["guess_count"] = guess_props.get("guess_count", 0) + 1
-      guess_props["guess_time"] = guess.timestamp
-      if guess.answer in puzzle.answers and not guess_props.get("solve_time"):
+      puzzle_props = puzzle_by_key[guess.key().parent()]
+      team_props = team_by_key[guess.team.key()]
+      guess_props = team_props["puzzles"][puzzle_props["number"] - 1]
+      guess_props["guess_count"] += 1
+      if guess.answer in puzzle_props["answers"] and \
+          not guess_props.get("solve_time"):
+        puzzle_props["solve_count"] += 1
         guess_props["solve_time"] = guess.timestamp
-        guess_props["solve_rank"] = solve_rank.get(puzzle.key(), 1)
-        solve_rank[puzzle.key()] = guess_props["solve_rank"] + 1
+        guess_props["solve_rank"] = Ordinal(puzzle_props["solve_count"])
 
     self.response.out.write(template.render("admin.dj.html", props))
 
@@ -81,6 +84,13 @@ class AdminPage(webapp.RequestHandler):
     game.solving_enabled = bool(self.request.get("solving_enabled"))
     game.voting_enabled = bool(self.request.get("voting_enabled"))
     game.results_enabled = bool(self.request.get("results_enabled"))
+
+    for team in model.Team.all().ancestor(game):
+      try: bonus = float(self.request.get("bonus.%d" % team.key().id()))
+      except: bonus = 0.0
+      if bonus != team.bonus:
+        team.bonus = bonus
+        team.put()
 
     if self.request.get("new_team"):  # before assign_numbers is handled
       team = model.Team(parent=game)

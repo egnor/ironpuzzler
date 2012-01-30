@@ -20,6 +20,7 @@ class Team(db.Model):
   name = db.StringProperty()
   password = db.StringProperty()
   email = db.StringProperty()
+  bonus = db.FloatProperty(default=0.0)
 
 
 class Puzzle(db.Model):

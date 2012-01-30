@@ -26,8 +26,3 @@ indexes:
   properties:
   - name: timestamp
     direction: desc
-
-- kind: Team
-  ancestor: yes
-  properties:
-  - name: name
