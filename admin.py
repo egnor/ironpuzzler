@@ -30,6 +30,7 @@ class AdminPage(webapp.RequestHandler):
     game = model.GetGame()
     user = users.get_current_user()
     if not user or not IsUserAdmin(game):
+      # TODO(egnor): Without multilogin, this creates redirect loops.
       return self.redirect(users.create_login_url(dest_url="/admin"))
 
     props = {

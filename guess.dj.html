@@ -30,6 +30,14 @@
   <p class="error">That answer was already submitted recently.</p>
 {% endif %}
 
+{% if puzzle.puzzle_blob %}
+  <h3>Download:
+    <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+      {{ puzzle.puzzle_blob.filename|default:"file" }}
+    </a></b>
+  </h3>
+{% endif %}
+
 {% if game.solving_enabled and not solve_time %}
   <form action="/guess" method="post">
     <input type="hidden" name="t" value="{{ team.key_id }}">
@@ -81,6 +89,14 @@
   <h3>Solution</h3>
 
   {{ puzzle.solution|linebreaks }}
+
+  {% if puzzle.solution_blob %}
+    <p>Download:
+      <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+        {{ puzzle.solution_blob.filename|default:"file" }}
+      </a></b>
+     </p>
+  {% endif %}
 {% endif %}
 </form>
 

@@ -1,6 +1,7 @@
 # Iron Puzzler data model
 
 from google.appengine.dist import use_library;  use_library('django', '1.2')
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 class Game(db.Model):
@@ -30,6 +31,8 @@ class Puzzle(db.Model):
   errata = db.StringProperty(multiline=True)
   errata_timestamp = db.DateTimeProperty()
   solution = db.StringProperty(multiline=True)
+  solution_blob = blobstore.BlobReferenceProperty()
+  puzzle_blob = blobstore.BlobReferenceProperty()
 
 
 class Guess(db.Model):

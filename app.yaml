@@ -22,6 +22,9 @@ handlers:
 - url: /team
   script: team.py
 
+- url: /download
+  script: download.py
+
 - url: /static
   static_dir: static
 

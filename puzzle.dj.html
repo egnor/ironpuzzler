@@ -15,7 +15,7 @@
   ({{ puzzle.key_name }})
 </h2>
 
-<form action="/puzzle" method="post">
+<form action="{{ form_url }}" method="post" enctype="multipart/form-data">
 <input type="hidden" name="t" value="{{ team.key_id }}">
 <input type="hidden" name="p" value="{{ puzzle.number }}">
 
@@ -76,7 +76,7 @@ Capitalization, punctuation, and spacing are ignored.</p>
 <textarea name="errata" cols="60" rows="6" class="leftside">
 {{ puzzle.errata }}</textarea>
 <p class="rightside">Notes to address problems discovered on game day.
-Visible to all teams.</p>
+Visible to everyone.</p>
 
 <h3>Solution</h3>
 
@@ -84,7 +84,42 @@ Visible to all teams.</p>
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
 <p class="rightside">Complete walkthrough.
-Visible to all teams once they solve the puzzle or voting starts.</p>
+Visible to everyone once they solve the puzzle or voting starts.</p>
+
+<h3>Uploads</h3>
+
+<p>Please use portable formats: PDF, JPEG, PNG, or TXT.
+To bundle several files, upload a ZIP.</p>
+
+<p style="margin-top: 1em">
+  <label><b>Puzzle file</b>:
+    {% if puzzle.puzzle_blob %}
+      <a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=p">
+          {{ puzzle.puzzle_blob.filename|default:"file" }}</a>
+      <br>Replace with:
+    {% endif %}
+    <input type="file" name="puzzle_file"><br>
+    {% if puzzle.key_name == "paper" %}
+      Upload the paper puzzle here.
+    {% else %}
+      You may upload an auxiliary file here.
+    {% endif %}
+    Everyone gets access when solving starts.
+  </label>
+</p>
+
+<p style="margin-top: 1em">
+  <label><b>Solution file</b>:
+    {% if puzzle.solution_blob %}
+      <a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+        {{ puzzle.solution_blob.filename|default:"file" }}</a>
+      <br>Replace with:
+    {% endif %}
+    <input type="file" name="solution_file"><br>
+    You may upload additional solution material here (eg. a photo).<br>
+    Teams get access once they solve the puzzle or start voting.
+  </label>
+</p>
 
 <h3><button>Submit changes</button></h3>
 </form>

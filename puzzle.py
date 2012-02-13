@@ -1,13 +1,14 @@
 # Iron Puzzler puzzle page handler
 
 import datetime
-import logging
 import re
 import urllib
 
 from google.appengine.dist import use_library;  use_library('django', '1.2')
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 from google.appengine.ext import webapp
+from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -30,7 +31,7 @@ def NormalizeScore(score):
   return (score < 0.0 or score > 5.0) and -1.0 or score
 
 
-class PuzzlePage(webapp.RequestHandler):
+class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
   def get(self):
     game = model.GetGame()
     team = login.GetTeamOrRedirect(game, self.request, self.response)
@@ -41,6 +42,7 @@ class PuzzlePage(webapp.RequestHandler):
     if puzzle.parent_key() != team.key(): return self.error(403)
 
     props = {
+      "form_url": blobstore.create_upload_url("/puzzle"),
       "game": model.GetProperties(game),
       "team": model.GetProperties(team),
       "puzzle": model.GetProperties(puzzle),
@@ -85,6 +87,14 @@ class PuzzlePage(webapp.RequestHandler):
       orig_value = urllib.unquote(self.request.get(arg + ".orig", ""))
       new_value = self.request.get(arg)
       if new_value != orig_value: updates[arg] = new_value
+
+    for blobinfo in self.get_uploads(field_name = "puzzle_file"): 
+      if puzzle.puzzle_blob: blobstore.delete(puzzle.puzzle_blob.key())
+      puzzle.puzzle_blob = blobinfo
+
+    for blobinfo in self.get_uploads(field_name = "solution_file"):
+      if puzzle.solution_blob: blobstore.delete(puzzle.solution_blob.key())
+      puzzle.solution_blob = blobinfo
 
     if "title" in updates: puzzle.title = updates.get("title")
 

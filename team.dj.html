@@ -69,6 +69,11 @@
       {% endif %}
     </td>
     <td>
+      {% if puzzle.puzzle_blob %}
+         <a title="Download {{ puzzle.puzzle_blob.filename|default:"file" }}" href="/download?t={{ team.key_id }}&p={{ puzzle.number }}&f=p">&#8681;</a>
+      {% endif %}
+    </td>
+    <td>
       <form action="/guess" method="post">
         {% if puzzle.solve_time %}
           <b class="guess_correct">SOLVED</b>
