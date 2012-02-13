@@ -85,7 +85,7 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
     for arg in self.request.arguments():
       if arg.endswith(".orig"): continue
       orig_value = urllib.unquote(self.request.get(arg + ".orig", ""))
-      new_value = self.request.get(arg)
+      new_value = self.request.get(arg).replace("\r\n", "\n")
       if new_value != orig_value: updates[arg] = new_value
 
     for blobinfo in self.get_uploads(field_name = "puzzle_file"): 
