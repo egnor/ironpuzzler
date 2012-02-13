@@ -32,7 +32,7 @@
 
 {% if puzzle.puzzle_blob %}
   <h3>Download:
-    <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+    <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=p">
       {{ puzzle.puzzle_blob.filename|default:"file" }}
     </a></b>
   </h3>
