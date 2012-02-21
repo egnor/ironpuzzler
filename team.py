@@ -1,7 +1,5 @@
 # Iron Puzzler team page handler
 
-import logging
-
 from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp

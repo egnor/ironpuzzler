@@ -1,6 +1,5 @@
 # Iron Puzzler administrative interface handler
 
-import logging
 import random
 import re
 
@@ -52,9 +51,11 @@ class AdminPage(webapp.RequestHandler):
     puzzle_by_key = {}
     for p in sorted(model.Puzzle.all().ancestor(game), key=puzzle.SortKey):
       puzzle_props = puzzle_by_key[p.key()] = model.GetProperties(p)
+      author_props = team_by_key.get(p.key().parent(), {})
       puzzle_props.update({
         "solve_count": 0,
-        "author": team_by_key.get(p.key().parent()),
+        "author": author_props.get("name"),
+        "author_id": author_props.get("key_id"),
       })
       props["puzzles"].append(puzzle_props)
 
@@ -62,7 +63,6 @@ class AdminPage(webapp.RequestHandler):
     for tp in props["teams"]:
       for pp in props["puzzles"]:
         work_props = work_by_keys[(tp["key"], pp["key"])] = {
-          "team": tp,
           "puzzle": pp,
           "guess_count": 0,
         }

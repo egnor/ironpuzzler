@@ -13,10 +13,11 @@
 <form action="/login" method="post">
 <h3>Team:
 <select name="t">
-{% for team in teams|dictsort:"name" %}
-  <option {% if team.key == cookie_team.key %} selected {% endif %}
-          value="{{ team.key_id }}">{{ team.name }}</option>
-{% endfor %}
+  {% for team in teams|dictsort:"name" %}
+  {# {% for team in teams %} #}
+    <option {% if team.key == cookie_team.key %} selected {% endif %}
+            value="{{ team.key_id }}">{{ team.name }}</option>
+  {% endfor %}
 </select>
 <label>password: <input type="password" name="pw" value="{{ cookie_password }}" size=10></label>
 <button>Login</button>
@@ -35,6 +36,7 @@
       <td>Bonus</td>
     </tr>
     {% for team in teams|dictsort:"score" reversed %}
+    {# {% for team in teams reversed %} #}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ forloop.counter }}. {{ team.name }}</nobr></td>
         <td align="center"><b>{{ team.score }}</b></td>
@@ -68,7 +70,7 @@
       {% for type in puzzle_types %}
         <td class="score_{{ type.grouper }}"> </td>
         {% for puzzle in type.list %}
-          <td align="center" class="score_{{ type.grouper }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; by {{ puzzle.author.name }}">
+          <td align="center" class="score_{{ type.grouper }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; by {{ puzzle.author }}">
             <em>#{{ puzzle.number }}</em>
           </td>
         {% endfor %}
@@ -77,6 +79,7 @@
     </tr>
 
     {% for team in teams|dictsort:"solve_score" reversed %}
+    {# {% for team in teams reversed %} #}
       {% regroup team.works by puzzle.key_name as work_types %}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
@@ -86,7 +89,7 @@
         {% for type in work_types %}
           <td class="score_{{ type.grouper }}"> </td>
           {% for work in type.list %}
-            {% if work.puzzle.author.key == team.key %}
+            {% if work.puzzle.author_id == team.key_id %}
               <td align="center" class="score_{{ type.grouper }}" title="{{ team.name }} wrote #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;"> A </td>
             {% else %} {% if work.score %}
               <td align="center" class="score_{{ type.grouper }}" title="{{ team.name }} earned {{ work.score }} points for solving&#10;#{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot; {{ work.solve_time|timesince }} ago">
@@ -135,6 +138,7 @@
     </tr>
 
     {% for team in teams|dictsort:"wrote_score" reversed %}
+    {# {% for team in teams reversed %} #}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
 

@@ -40,13 +40,15 @@ class MainPage(webapp.RequestHandler):
     puzzle_by_key = {}
     for p in sorted(model.Puzzle.all().ancestor(game), key=puzzle.SortKey):
       puzzle_props = puzzle_by_key[p.key()] = model.GetProperties(p)
+      author_props = team_by_key.get(p.key().parent(), {})
       puzzle_props.update({
-        "author": team_by_key[p.key().parent()],
+        "author": author_props.get("name"),
+        "author_id": author_props.get("key_id"),
         "score": 0,
         "solve_count": 0,
         "votes": [],
       })
-      puzzle_props["author"]["wrote"][p.key().name()] = puzzle_props
+      author_props["wrote"][p.key().name()] = puzzle_props
       props["puzzles"].append(puzzle_props)
 
     for feedback in model.Feedback.all().ancestor(game):
@@ -54,22 +56,22 @@ class MainPage(webapp.RequestHandler):
       puzzle_props["votes"].append(feedback.scores)
 
     work_by_keys = {}
-    for tp in props["teams"]:
-      for pp in props["puzzles"]:
-        work_props = work_by_keys[(tp["key"], pp["key"])] = {
-          "team": tp,
-          "puzzle": pp,
+    for team_props in props["teams"]:
+      for puzzle_props in props["puzzles"]:
+        work_props = work_by_keys[(team_props["key"], puzzle_props["key"])] = {
+          "puzzle": puzzle_props,
           "guess_count": 0,
         }
-        tp["works"].append(work_props)
+        team_props["works"].append(work_props)
 
     for guess in model.Guess.all().ancestor(game).order("timestamp"):
-      wp = work_by_keys[(guess.team.key(), guess.key().parent())]
-      if guess.answer in wp["puzzle"]["answers"]:
-        if not wp.get("solve_time"):
-          wp["solve_time"] = wp["team"]["solve_time"] = guess.timestamp
-          wp["puzzle"]["solve_count"] += 1
-          wp["team"]["solve_count"] += 1
+      work_props = work_by_keys[(guess.team.key(), guess.key().parent())]
+      if guess.answer in work_props["puzzle"]["answers"]:
+        if not work_props.get("solve_time"):
+          team_props = team_by_key[guess.team.key()]
+          work_props["solve_time"] = team_props["solve_time"] = guess.timestamp
+          work_props["puzzle"]["solve_count"] += 1
+          team_props["solve_count"] += 1
 
     #
     # Compute scores

@@ -1,7 +1,6 @@
 # Iron Puzzler submission page handler
 
 import datetime
-import logging
 import re
 
 from google.appengine.dist import use_library;  use_library('django', '1.2')

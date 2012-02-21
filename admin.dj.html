@@ -35,7 +35,7 @@
     <td>Bonus</td>
     {% for puzzle in puzzles %}
       <td align="center">
-        <a href="/puzzle?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.author.name }}">#{{ puzzle.number }}</a>
+        <a href="/puzzle?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.author }}">#{{ puzzle.number }}</a>
       </td>
     {% endfor %}
   </tr>
@@ -50,7 +50,7 @@
       </td>
       {% for work in team.works %}
         <td align="center">
-          {% if work.puzzle.author.key == team.key %}
+          {% if work.puzzle.author_id == team.key_id %}
             <a href="/puzzle?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}" 
                class="puzzle_author" title="{{ team.name }} wrote #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;">
               A
@@ -110,17 +110,17 @@
   <td>Err.</td>
 </tr>
 {% for puzzle in puzzles %}
-<input type="hidden" name="number.{{ puzzle.author.key_id }}.{{ puzzle.key_name }}.orig" value="{{ puzzle.number }}">
+<input type="hidden" name="number.{{ puzzle.author_id }}.{{ puzzle.key_name }}.orig" value="{{ puzzle.number }}">
 <tr>
-  <td>#<input type="text" size="2" name="number.{{ puzzle.author.key_id }}.{{ puzzle.key_name }}" value="{{ puzzle.number }}"></td>
-  <td><nobr><a href="/puzzle?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}">{{ puzzle.title }}</a></nobr></td>
+  <td><nobr>#<input type="text" size="2" name="number.{{ puzzle.author_id }}.{{ puzzle.key_name }}" value="{{ puzzle.number }}"></nobr></td>
+  <td><nobr><a href="/puzzle?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}">{{ puzzle.title }}</a></nobr></td>
   <td>{{ puzzle.key_name }}</td>
-  <td><nobr><a href="/team?t={{ puzzle.author.key_id }}">{{ puzzle.author.name }}</a></nobr></td>
+  <td><nobr><a href="/team?t={{ puzzle.author_id }}">{{ puzzle.author }}</a></nobr></td>
   <td>{% if puzzle.puzzle_blob %}
-    <a href="/download?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}&f=p">{{ puzzle.puzzle_blob.filename|default:"file" }}</a>
+    <a href="/download?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}&f=p">{{ puzzle.puzzle_blob.filename|default:"file" }}</a>
   {% endif %}</td>
   <td>{% if puzzle.solution_blob %}
-    <a href="/download?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}&f=s">{{ puzzle.solution_blob.filename|default:"file" }}</a>
+    <a href="/download?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}&f=s">{{ puzzle.solution_blob.filename|default:"file" }}</a>
   {% endif %}</td>
   <td>{% if puzzle.solution %}Y{% endif %}</td>
   <td>{% if puzzle.answers %}{{ puzzle.answers|length }}{% endif %}</td>
