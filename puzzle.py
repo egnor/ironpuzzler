@@ -14,11 +14,20 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
 import model
+import re
 
-def MaybeGetPuzzle(game, request):
-  try: key = game.puzzle_order[int(request.get("p")) - 1]
-  except Exception: return None
-  return model.Puzzle.get(key)
+def MaybeGetPuzzle(ancestor, request):
+  n = request.get("p")
+  for p in model.Puzzle.all().ancestor(ancestor).filter("number", n): return p
+  return None
+
+
+SORTKEY_RE = re.compile("([^0-9-]*)([0-9-]*)")
+
+def SortKey(puzzle):
+  key = [(a, int(n or 0)) for a, n in SORTKEY_RE.findall(puzzle.number or "")]
+  key.append(puzzle.key())
+  return key
 
 
 def NormalizeAnswer(answer):
@@ -27,8 +36,8 @@ def NormalizeAnswer(answer):
 
 def NormalizeScore(score):
   try: score = float(score)
-  except: return -1.0
-  return (score < 0.0 or score > 5.0) and -1.0 or score
+  except: return 3.0
+  return (score < 0.0 or score > 5.0) and 3.0 or score
 
 
 class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
@@ -37,7 +46,7 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
     team = login.GetTeamOrRedirect(game, self.request, self.response)
     if not team: return
 
-    puzzle = MaybeGetPuzzle(game, self.request)
+    puzzle = MaybeGetPuzzle(team, self.request)
     if not puzzle: return self.error(404)
     if puzzle.parent_key() != team.key(): return self.error(403)
 
@@ -52,7 +61,6 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
     }
 
     props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
-    props["puzzle"]["number"] = self.request.get("p")
     props["comments"].sort(key=unicode.lower)
     props["votes"].sort(reverse=True)
 

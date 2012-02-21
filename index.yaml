@@ -26,3 +26,8 @@ indexes:
   properties:
   - name: timestamp
     direction: desc
+
+- kind: Puzzle
+  ancestor: yes
+  properties:
+  - name: number

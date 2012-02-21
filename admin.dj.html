@@ -28,13 +28,14 @@
 
 <h3>Teams</h3>
 
+{% if teams %}
 <table>
   <tr>
     <td> </td>
     <td>Bonus</td>
     {% for puzzle in puzzles %}
       <td align="center">
-        <a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.team.name }}">#{{ puzzle.number }}</a>
+        <a href="/puzzle?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.author.name }}">#{{ puzzle.number }}</a>
       </td>
     {% endfor %}
   </tr>
@@ -47,28 +48,28 @@
         <input type="text" size="3" name="bonus.{{ team.key_id }}"
                value="{{ team.bonus|default:0.0 }}">
       </td>
-      {% for puzzle in team.puzzles %}
+      {% for work in team.works %}
         <td align="center">
-          {% if puzzle.team.key_id == team.key_id %}
-            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}" 
-               class="puzzle_author" title="{{ team.name }} wrote #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;">
+          {% if work.puzzle.author == team %}
+            <a href="/puzzle?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}" 
+               class="puzzle_author" title="{{ team.name }} wrote #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;">
               A
             </a>
           {% else %}
-            {% if puzzle.solve_rank %}
-              <a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}"
+            {% if work.solve_rank %}
+              <a href="/guess?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}"
                  class="guess_correct"
-                 title="{{ team.name }} solved #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; {{ puzzle.solve_rank }}&#10;{{ puzzle.solve_time|timesince }} ago ({{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }})">
-                {{ puzzle.solve_rank }}
+                 title="{{ team.name }} solved #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot; {{ work.solve_rank }}&#10;{{ work.solve_time|timesince }} ago ({{ work.guess_count }} attempt{{ work.guess_count|pluralize }})">
+                {{ work.solve_rank }}
               </a>
-            {% else %} {% if puzzle.guess_count %}
-              <a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}"
+            {% else %} {% if work.guess_count %}
+              <a href="/guess?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}"
                  class="guess_incorrect"
-                 title="{{ team.name }} made {{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }} for #{{ puzzle.number }} &quot;{{ puzzle.title }}&quot;">
-                {{ puzzle.guess_count }}x
+                 title="{{ team.name }} made {{ work.guess_count }} attempt{{ work.guess_count|pluralize }} for #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;">
+                {{ work.guess_count }}x
               </a>
             {% else %}
-              <a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}"
+              <a href="/guess?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}"
                  class="guess_none">
                 --
               </a>
@@ -79,26 +80,18 @@
     </tr>
   {% endfor %}
 </table>
+{% endif %} {# teams #}
 
 <p>
-  <label>Add team: <input type="text" name="new_team" id="add_team" size="25"></label>
+  <label>Add team: <input type="text" name="new_team" size="25"></label>
   <label>pw: <input type="text" name="new_password" size="10"></label>
 </p>
 
-{% if puzzles %}
-  <label><input type="checkbox" name="assign_numbers" value="true">
-  Scramble and reassign puzzle numbers
-  </label>
-  (<label><input type="checkbox" name="confirm_numbers" value="true">
-  Are you sure?
-  </label>)<br>
-{% else %}
-  {% if teams %}
-    <label><input type="checkbox" name="assign_numbers" value="true">
-    Assign puzzle numbers to these teams
-    </label><br>
-    <input type="hidden" name="confirm_numbers" value="true">
-  {% endif %}
+{% if teams %}
+  <p>
+    <label>Delete team: <input tyep="text" name="delete_team" size="25"></label>
+    (Type the name to show you mean it!)
+  </p>
 {% endif %}
 
 {% if puzzles %}
@@ -106,25 +99,28 @@
 
 <table>
 <tr>
-  <td>Puzzle</td>
+  <td> </td>
+  <td>Title</td>
   <td>Type</td>
   <td>Author</td>
-  <td>Puz file</td>
-  <td>Sol file</td>
-  <td>Sol text</td>
-  <td>Ans</td>
-  <td>Err</td>
+  <td>P-file</td>
+  <td>S-file</td>
+  <td>S-text</td>
+  <td>Ans.</td>
+  <td>Err.</td>
 </tr>
 {% for puzzle in puzzles %}
+<input type="hidden" name="number.{{ puzzle.author.key_id }}.{{ puzzle.key_name }}.orig" value="{{ puzzle.number }}">
 <tr>
-  <td><nobr><a href="/puzzle?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} "{{ puzzle.title }}"</a></nobr></td>
+  <td>#<input type="text" size="2" name="number.{{ puzzle.author.key_id }}.{{ puzzle.key_name }}" value="{{ puzzle.number }}"></td>
+  <td><nobr><a href="/puzzle?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}">{{ puzzle.title }}</a></nobr></td>
   <td>{{ puzzle.key_name }}</td>
-  <td><nobr><a href="/team?t={{ puzzle.team.key_id }}">{{ puzzle.team.name }}</a></nobr></td>
+  <td><nobr><a href="/team?t={{ puzzle.author.key_id }}">{{ puzzle.author.name }}</a></nobr></td>
   <td>{% if puzzle.puzzle_blob %}
-    <a href="/download?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}&f=p">{{ puzzle.puzzle_blob.filename|default:"file" }}</a>
+    <a href="/download?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}&f=p">{{ puzzle.puzzle_blob.filename|default:"file" }}</a>
   {% endif %}</td>
   <td>{% if puzzle.solution_blob %}
-    <a href="/download?t={{ puzzle.team.key_id }}&p={{ puzzle.number }}&f=s">{{ puzzle.solution_blob.filename|default:"file" }}</a>
+    <a href="/download?t={{ puzzle.author.key_id }}&p={{ puzzle.number|urlencode }}&f=s">{{ puzzle.solution_blob.filename|default:"file" }}</a>
   {% endif %}</td>
   <td>{% if puzzle.solution %}Y{% endif %}</td>
   <td>{% if puzzle.answers %}{{ puzzle.answers|length }}{% endif %}</td>
@@ -132,6 +128,13 @@
 </tr>
 {% endfor %}
 </table>
+
+<p>
+  <label><input type="checkbox" name="assign_numbers" value="true">
+  Assign grouped random numbers to numberless puzzles,</label>
+  <label>starting at
+  <input type="text" size="2" name="assign_start" value="1"></label><br>
+</p>
 
 {% endif %}
 

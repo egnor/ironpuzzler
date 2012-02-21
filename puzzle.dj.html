@@ -40,9 +40,7 @@
         <tr> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
       {% endif %}
       <tr> {% for score in scores %}
-        <td align="center">
-          {% if score >= 0 %}{{ score }}{% else %}--{% endif %}
-        </td>
+        <td align="center">{{ score }}</td>
       {% endfor %} </tr>
     {% empty %}
       <tr><td>No scores were entered for this puzzle.</td></tr>
@@ -75,8 +73,8 @@ Capitalization, punctuation, and spacing are ignored.</p>
 <input type="hidden" name="errata.orig" value="{{ puzzle.errata|urlencode }}">
 <textarea name="errata" cols="60" rows="6" class="leftside">
 {{ puzzle.errata }}</textarea>
-<p class="rightside">Notes to address problems discovered on game day.
-Visible to everyone.</p>
+<p class="rightside">Notes to address last minute problems.
+Visible to everyone.  Avoid spoilers!  Do not identify your team!</p>
 
 <h3>Solution</h3>
 
@@ -84,17 +82,17 @@ Visible to everyone.</p>
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
 <p class="rightside">Complete walkthrough.
-Visible to everyone once they solve the puzzle or voting starts.</p>
+Visible to everyone once they solve the puzzle or voting starts.
+Do not identify your team!</p>
 
 <h3>Uploads</h3>
 
-<p>Please use portable formats: PDF, JPEG, PNG, or TXT.
-To bundle several files, upload a ZIP.</p>
+<p>Please use PDF, JPEG, or a ZIP of PDF/JPEG files.</p>
 
 <p style="margin-top: 1em">
   <label><b>Puzzle file</b>:
     {% if puzzle.puzzle_blob %}
-      <a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=p">
+      <a href="/download?p={{ puzzle.number|urlencode }}&t={{ team.key_id }}&f=p">
           {{ puzzle.puzzle_blob.filename|default:"file" }}</a>
       <br>Replace with:
     {% endif %}
@@ -111,7 +109,7 @@ To bundle several files, upload a ZIP.</p>
 <p style="margin-top: 1em">
   <label><b>Solution file</b>:
     {% if puzzle.solution_blob %}
-      <a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+      <a href="/download?p={{ puzzle.number|urlencode }}&t={{ team.key_id }}&f=s">
         {{ puzzle.solution_blob.filename|default:"file" }}</a>
       <br>Replace with:
     {% endif %}

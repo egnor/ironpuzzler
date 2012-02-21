@@ -54,3 +54,12 @@ td, th { padding: 0 1em 0 0; }
 .guess_none { color: #666666; text-decoration: none; }
 
 .puzzle_author { color: #666666; text-decoration: none; font-weight: bold; }
+
+.score_paper { background: #EEEEEE; }
+.score_nonpaper { background: #CCCCCC; }
+.score_bonus { background: #AAAAAA; }
+
+.your_team { background: #FFFF88; }
+.your_team .score_paper { background: #EEEE88; }
+.your_team .score_nonpaper { background: #DDDD88; }
+.your_team .score_bonus { background: #CCCC88; }

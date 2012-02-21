@@ -1,5 +1,6 @@
 # Iron Puzzler administrative interface handler
 
+import logging
 import random
 import re
 
@@ -11,6 +12,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import model
+import puzzle
 
 PUZZLE_TYPES = ["paper", "nonpaper"]
 
@@ -44,30 +46,36 @@ class AdminPage(webapp.RequestHandler):
     team_by_key = {}
     for team in model.Team.all().ancestor(game):
       team_props = team_by_key[team.key()] = model.GetProperties(team)
+      team_props["works"] = []
       props["teams"].append(team_props)
 
     puzzle_by_key = {}
-    for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
-      puzzle_props = puzzle_by_key[puzzle.key()] = model.GetProperties(puzzle)
-      puzzle_props["solve_count"] = 0
-      puzzle_props["number"] = n + 1
-      puzzle_props["team"] = team_by_key[puzzle.key().parent()]
+    for p in sorted(model.Puzzle.all().ancestor(game), key=puzzle.SortKey):
+      puzzle_props = puzzle_by_key[p.key()] = model.GetProperties(p)
+      puzzle_props.update({
+        "solve_count": 0,
+        "author": team_by_key.get(p.key().parent()),
+      })
       props["puzzles"].append(puzzle_props)
 
-    for team_props in props["teams"]:
-      team_props["puzzles"] = [pp.copy() for pp in props["puzzles"]]
-      for gp in team_props["puzzles"]: gp["guess_count"] = 0
+    work_by_keys = {}
+    for tp in props["teams"]:
+      for pp in props["puzzles"]:
+        work_props = work_by_keys[(tp["key"], pp["key"])] = {
+          "team": tp,
+          "puzzle": pp,
+          "guess_count": 0,
+        }
+        tp["works"].append(work_props)
+        
 
     for guess in model.Guess.all().ancestor(game).order("timestamp"):
-      puzzle_props = puzzle_by_key[guess.key().parent()]
-      team_props = team_by_key[guess.team.key()]
-      guess_props = team_props["puzzles"][puzzle_props["number"] - 1]
-      guess_props["guess_count"] += 1
-      if guess.answer in puzzle_props["answers"] and \
-          not guess_props.get("solve_time"):
-        puzzle_props["solve_count"] += 1
-        guess_props["solve_time"] = guess.timestamp
-        guess_props["solve_rank"] = Ordinal(puzzle_props["solve_count"])
+      wp = work_by_keys[(guess.team.key(), guess.key().parent())]
+      wp["guess_count"] += 1
+      if guess.answer in wp["puzzle"]["answers"] and not wp.get("solve_time"):
+        wp["puzzle"]["solve_count"] += 1
+        wp["solve_time"] = guess.timestamp
+        wp["solve_rank"] = Ordinal(wp["puzzle"]["solve_count"])
 
     self.response.out.write(template.render("admin.dj.html", props))
 
@@ -85,6 +93,7 @@ class AdminPage(webapp.RequestHandler):
     game.solving_enabled = bool(self.request.get("solving_enabled"))
     game.voting_enabled = bool(self.request.get("voting_enabled"))
     game.results_enabled = bool(self.request.get("results_enabled"))
+    game.put()
 
     for team in model.Team.all().ancestor(game):
       try: bonus = float(self.request.get("bonus.%d" % team.key().id()))
@@ -93,6 +102,16 @@ class AdminPage(webapp.RequestHandler):
         team.bonus = bonus
         team.put()
 
+    n = self.request.get("delete_team")
+    if n:
+      for tk in model.Team.all(keys_only=True).ancestor(game).filter("name", n):
+        db.delete(
+            model.Guess.all(keys_only=True).ancestor(game).filter("team", tk))
+        db.delete([
+            db.Key.from_path("Feedback", str(tk), parent=p.key())
+            for p in model.Puzzle.all().ancestor(game)])
+        db.delete(db.Query(keys_only=True).ancestor(tk))
+
     if self.request.get("new_team"):  # before assign_numbers is handled
       team = model.Team(parent=game)
       team.name = self.request.get("new_team")
@@ -100,18 +119,35 @@ class AdminPage(webapp.RequestHandler):
       team.put()
       for pt in PUZZLE_TYPES: model.Puzzle(parent=team, key_name=pt).put()
 
-    if self.request.get("assign_numbers") and \
-       self.request.get("confirm_numbers"):
-      type_puzzles = {}
-      for p in model.Puzzle.all(keys_only=True).ancestor(game):
-        type_puzzles.setdefault(p.name(), []).append(p)
+    nonum = model.Puzzle().number
+    puzzles = list(model.Puzzle.all().ancestor(game))
+    for puzzle in puzzles:
+      k = puzzle.key()
+      num = self.request.get("number.%d.%s" % (k.parent().id(), k.name()))
+      orig = self.request.get("number.%d.%s.orig" % (k.parent().id(), k.name()))
+      if num != orig:
+        puzzle.number = num or nonum
+        puzzle.put()
 
-      game.puzzle_order = []
-      for ptype, plist in sorted(type_puzzles.items()):
+    if self.request.get("assign_numbers"):
+      try: n = int(self.request.get("assign_start"))
+      except: n = 1
+
+      taken = {}  # numbers already used
+      type_puzzles = {}  # group puzzles by type before scrambling order
+      for p in puzzles:
+        if p.number == nonum or not p.number:
+          type_puzzles.setdefault(p.key().name(), []).append(p)
+        else:
+          taken[p.number] = 1
+
+      for ptype, plist in sorted(type_puzzles.iteritems()):
         random.shuffle(plist)
-        game.puzzle_order.extend(plist)
-
-    game.put()
+        for p in plist:
+          while taken.has_key(str(n)): n += 1
+          p.number = str(n)
+          p.put()
+          n += 1
 
     self.redirect("/admin")
 

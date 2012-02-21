@@ -9,7 +9,6 @@ class Game(db.Model):
   ingredients = db.StringListProperty()
   ingredients_visible = db.BooleanProperty()
   admin_users = db.StringListProperty()
-  puzzle_order = db.ListProperty(db.Key)
   login_enabled = db.BooleanProperty()
   solving_enabled = db.BooleanProperty()
   voting_enabled = db.BooleanProperty()
@@ -26,6 +25,7 @@ class Team(db.Model):
 
 class Puzzle(db.Model):
   """ Parent: Team (author); Key name: Puzzle type ("paper", "nonpaper") """
+  number = db.StringProperty(default="???")
   title = db.StringProperty(default="Untitled")
   answers = db.StringListProperty()
   errata = db.StringProperty(multiline=True)
@@ -44,13 +44,14 @@ class Guess(db.Model):
 
 class Feedback(db.Model):
   """ Parent: Puzzle; Key name: Key ID of team giving feedback """
-  scores = db.ListProperty(float, default=[-1., -1., -1.])  # negative means N/A
+  scores = db.ListProperty(float, default=[3., 3., 3.])  # negative means N/A
   comment = db.StringProperty()
 
 
 def GetProperties(entity):
   """ Convert a db.Model entity into a plain ol' dict for use in templates. """
   props = dict([(p, getattr(entity, p) or "") for p in entity.properties()])
+  props["key"] = entity.key()
   props["key_id"] = entity.key().id()
   props["key_name"] = entity.key().name()
   return props

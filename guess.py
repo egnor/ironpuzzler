@@ -49,8 +49,6 @@ class GuessPage(webapp.RequestHandler):
           props["guesses"][-1]["is_correct"] = True
           props.setdefault("solve_time", guess.timestamp)
 
-    props["puzzle"]["number"] = self.request.get("p")
-
     self.response.out.write(template.render("guess.dj.html", props))
 
 

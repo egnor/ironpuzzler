@@ -21,21 +21,21 @@
   <tr> <td> </td> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
 {% for puzzle in other_puzzles %}
   <tr>
-    <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>
+    <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>
     {% for score in puzzle.feedback.scores %}
       <td>
         <input type="hidden"
                name="score.{{ puzzle.number }}.{{ forloop.counter0 }}.orig"
-               value="{% if score >= 0 %}{{ score }}{% endif %}">
+               value="{{ score }}">
         <input type="text" size="3"
                {% if not game.voting_enabled %} disabled="disabled" {% endif %}
                name="score.{{ puzzle.number }}.{{ forloop.counter0 }}"
-               value="{% if score >= 0 %}{{ score }}{% endif %}">
+               value="{{ score }}">
       </td>
     {% endfor %}
     {% if forloop.first %}
     <td valign="top" rowspan="{{ other_puzzles|length }}">
-      (Numeric scores, 0.0-5.0)
+      Numeric scores, 0.0-5.0.  Aim for 3.0 average.
       <p>Click the puzzle to see the solution or leave the author comments.</p>
     </td>
     {% endif %}
@@ -69,11 +69,6 @@
       {% endif %}
     </td>
     <td>
-      {% if puzzle.puzzle_blob %}
-         <a title="Download {{ puzzle.puzzle_blob.filename|default:"file" }}" href="/download?t={{ team.key_id }}&p={{ puzzle.number }}&f=p">&#8681;</a>
-      {% endif %}
-    </td>
-    <td>
       <form action="/guess" method="post">
         {% if puzzle.solve_time %}
           <b class="guess_correct">SOLVED</b>
@@ -85,7 +80,7 @@
           <button>Submit</button>
         {% endif %}
         {% if puzzle.guess_count %}
-          (<a href="/guess?t={{ team.key_id }}&p={{ puzzle.number }}">{{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }}</a>)
+          (<a href="/guess?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">{{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }}</a>)
         {% endif %}
       </form>
     </td>
@@ -112,16 +107,16 @@
 <h3>Your puzzles</h3>
 
 <table>
-  {% for puzzle in team_puzzles %}
+  {% for puzzle in team_puzzles|dictsort:"key_name" %}
     <tr>
       <td>
         <b>
           {% if game.solving_enabled %}
-            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}"
+            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}"
                title="#{{ puzzle.number }} {{ puzzle.title }}">
               {{ puzzle.key_name|capfirst }}</a>
           {% else %}
-            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number }}">
+            <a href="/puzzle?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">
               #{{ puzzle.number }} {{ puzzle.title }}</a>
             ({{ puzzle.key_name }})
           {% endif %}

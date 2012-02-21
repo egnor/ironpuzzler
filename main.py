@@ -6,7 +6,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+import login
 import model
+import puzzle
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -20,38 +22,54 @@ class MainPage(webapp.RequestHandler):
     team_by_key = {}
     for team in model.Team.all().ancestor(game):
       team_props = team_by_key[team.key()] = model.GetProperties(team)
-      team_props["solve_count"] = 0
-      team_props["solve_time"] = 0
+      team_props.update({
+        "score": team_props.get("bonus") or 0.0,
+        "solve_count": 0,
+        "solve_score": 0,
+        "solve_time": 0,
+        "works": [],
+        "wrote": {},
+        "wrote_score": 0,
+      })
+      cookie = login.CookiePassword(team, self.request)
+      if cookie:
+        props["cookie_team"] = team_props
+        props["cookie_password"] = cookie
       props["teams"].append(team_props)
 
     puzzle_by_key = {}
-    for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
-      puzzle_props = puzzle_by_key[puzzle.key()] = model.GetProperties(puzzle)
+    for p in sorted(model.Puzzle.all().ancestor(game), key=puzzle.SortKey):
+      puzzle_props = puzzle_by_key[p.key()] = model.GetProperties(p)
       puzzle_props.update({
+        "author": team_by_key[p.key().parent()],
+        "score": 0,
         "solve_count": 0,
-        "number": n + 1,
-        "team": team_by_key[puzzle.key().parent()],
         "votes": [],
       })
+      puzzle_props["author"]["wrote"][p.key().name()] = puzzle_props
       props["puzzles"].append(puzzle_props)
 
     for feedback in model.Feedback.all().ancestor(game):
       puzzle_props = puzzle_by_key[feedback.key().parent()]
       puzzle_props["votes"].append(feedback.scores)
 
-    for team_props in props["teams"]:
-      team_props["puzzles"] = [pp.copy() for pp in props["puzzles"]]
-      for gp in team_props["puzzles"]: gp["guess_count"] = 0
+    work_by_keys = {}
+    for tp in props["teams"]:
+      for pp in props["puzzles"]:
+        work_props = work_by_keys[(tp["key"], pp["key"])] = {
+          "team": tp,
+          "puzzle": pp,
+          "guess_count": 0,
+        }
+        tp["works"].append(work_props)
 
     for guess in model.Guess.all().ancestor(game).order("timestamp"):
-      puzzle_props = puzzle_by_key[guess.key().parent()]
-      if guess.answer in puzzle_props["answers"]:
-        team_props = team_by_key[guess.team.key()]
-        guess_props = team_props["puzzles"][puzzle_props["number"] - 1]
-        if not guess_props.get("solve_time"):
-          guess_props["solve_time"] = team_props["solve_time"] = guess.timestamp
-          puzzle_props["solve_count"] += 1
-          team_props["solve_count"] += 1
+      wp = work_by_keys[(guess.team.key(), guess.key().parent())]
+      if guess.answer in wp["puzzle"]["answers"]:
+        if not wp.get("solve_time"):
+          wp["solve_time"] = wp["team"]["solve_time"] = guess.timestamp
+          wp["puzzle"]["solve_count"] += 1
+          wp["team"]["solve_count"] += 1
 
     #
     # Compute scores
@@ -59,29 +77,24 @@ class MainPage(webapp.RequestHandler):
 
     no_scores = model.Feedback().scores
     for team_props in props["teams"]:
-      team_score = 0.0
-      team_props["author"] = {}
-      for n, guess_props in enumerate(team_props["puzzles"]):
-        if guess_props["team"]["key_id"] == team_props["key_id"]:
-          team_props["author"][guess_props["key_name"]] = guess_props
-          guess_scores = guess_props["scores"] = [0 for s in no_scores]
-          for scores in guess_props["votes"]:
-            for i in range(len(guess_scores)):
-              if i < len(scores) and scores[i] >= 0:
-                guess_scores[i] += scores[i]
+      for puzzle_props in team_props["wrote"].values():
+        wrote_scores = puzzle_props["scores"] = [0 for s in no_scores]
+        for scores in puzzle_props["votes"]:
+          for i in range(len(wrote_scores)):
+            if i < len(scores) and scores[i] >= 0: wrote_scores[i] += scores[i]
+        points = 2 * wrote_scores[0] + sum(wrote_scores[1:])
+        puzzle_props["score"] = points
+        team_props["score"] += points
+        team_props["wrote_score"] += points
 
-          team_score += 2 * guess_scores[0] + sum(guess_scores[1:])
+      for work_props in team_props["works"]:
+        if work_props.get("solve_time"):
+          points = 9 + len(props["teams"]) - work_props["puzzle"]["solve_count"]
+          work_props["score"] = points
+          team_props["solve_score"] += points
+          team_props["score"] += points
 
-        if guess_props.get("solve_time"):
-          points = 9 + len(props["teams"]) - props["puzzles"][n]["solve_count"]
-          guess_props["score"] = points
-          team_score += points
-
-      team_score += (team_props.get("bonus") or 0) 
-      team_props["score"] = team_score
-      team_props["minus_score"] = -team_score
-
-    props["teams"].sort(key = lambda tp:
+    props["teams"].sort(key=lambda tp:
         (-tp["solve_count"], tp["solve_time"], tp["name"]))
 
     self.response.out.write(template.render("main.dj.html", props))

@@ -12,6 +12,11 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import admin
 import model
 
+def CookiePassword(team, request):
+  pw = urllib.unquote(request.cookies.get("password", ""))
+  return (pw == team.password) and pw or None
+
+
 def GetTeamOrRedirect(game, request, response):
   try: team = model.Team.get_by_id(int(request.get("t")), parent=game)
   except Exception: team = None
@@ -20,8 +25,7 @@ def GetTeamOrRedirect(game, request, response):
     return None
 
   if request.path == "/login" or admin.IsUserAdmin(game): return team
-  pw = urllib.unquote(request.cookies.get("password_%d" % team.key().id(), ""))
-  if pw == team.password: return team
+  if CookiePassword(team, request): return team
 
   if request.body:
     response.set_status(403)  # Can't redeliver POST
@@ -45,8 +49,8 @@ class LoginPage(webapp.RequestHandler):
       "target": self.request.get("u"),
     }
 
-    self.response.headers.add_header("Set-Cookie",
-        "password_%d=; Max-Age=0; Path=/" % team.key().id())
+    self.response.headers.add_header(
+        "Set-Cookie", "password=; Max-Age=0; Path=/")
     self.response.out.write(template.render("login.dj.html", props))
 
 
@@ -60,8 +64,8 @@ class LoginPage(webapp.RequestHandler):
     if password == team.password:
       self.redirect(target)
       self.response.headers.add_header("Set-Cookie",
-          "password_%d=%s; Max-Age=%d; Path=/" % (
-          team.key().id(), urllib.quote(password), 7*24*60*60))
+          "password=%s; Max-Age=%d; Path=/" % (
+          urllib.quote(password), 7*24*60*60))
     else:
       self.redirect("/login?t=%d&u=%s&error=password" % (
           team.key().id(), urllib.quote(target)))

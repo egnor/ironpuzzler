@@ -10,7 +10,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
 import model
-from puzzle import NormalizeScore
+import puzzle
 
 
 class TeamPage(webapp.RequestHandler):
@@ -29,26 +29,24 @@ class TeamPage(webapp.RequestHandler):
     }
 
     puzzle_props = {}
-    for n, puzzle in enumerate(model.Puzzle.get(game.puzzle_order)):
-      pp = puzzle_props[puzzle.key()] = model.GetProperties(puzzle)
+    for p in sorted(model.Puzzle.all().ancestor(game), key=puzzle.SortKey):
+      pp = puzzle_props[p.key()] = model.GetProperties(p)
       pp.update({
-        "number": n + 1,
         "guess_count": 0,
-        "answers": set(puzzle.answers),
         "solve_teams": set(),
         "comment_count": 0,
         "vote_count": 0,
       })
       if pp.get("errata"):
         props["errata_puzzles"].append(pp)
-      if puzzle.parent_key() == team.key():
+      if p.parent_key() == team.key():
         props["team_puzzles"].append(pp)
       else:
         props["other_puzzles"].append(pp)
 
     feedback_keys = [
-        db.Key.from_path("Feedback", str(team.key()), parent=pk)
-        for pk in game.puzzle_order if pk.parent() != team.key()]
+        db.Key.from_path("Feedback", str(team.key()), parent=pp["key"])
+        for pp in props["other_puzzles"]]
     for key, feedback in zip(feedback_keys, model.Feedback.get(feedback_keys)):
       pp = puzzle_props.get(key.parent())
       if pp: pp["feedback"] = model.GetProperties(
@@ -82,12 +80,13 @@ class TeamPage(webapp.RequestHandler):
 
     if game.voting_enabled:
       sr = range(len(model.Feedback().scores))
-      for n, pk in enumerate(game.puzzle_order):
-        score = [self.request.get("score.%d.%d" % (n + 1, s)) for s in sr]
-        orig = [self.request.get("score.%d.%d.orig" % (n + 1, s)) for s in sr]
-        if score != orig:
-          feedback = model.Feedback.get_or_insert(str(team.key()), parent=pk)
-          for s in sr: feedback.scores[s] = NormalizeScore(score[s])
+      for p in model.Puzzle.all().ancestor(game):
+        n = p.number
+        score = [self.request.get("score.%s.%d" % (n, s)) for s in sr]
+        score_orig = [self.request.get("score.%s.%d.orig" % (n, s)) for s in sr]
+        if score != score_orig:
+          feedback = model.Feedback.get_or_insert(str(team.key()), parent=p)
+          for s in sr: feedback.scores[s] = puzzle.NormalizeScore(score[s])
           feedback.put()
 
     self.redirect("/team?t=%d" % team.key().id())

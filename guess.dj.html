@@ -32,7 +32,7 @@
 
 {% if puzzle.puzzle_blob %}
   <h3>Download:
-    <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=p">
+    <b><a href="/download?p={{ puzzle.number|urlencode }}&t={{ team.key_id }}&f=p">
       {{ puzzle.puzzle_blob.filename|default:"file" }}
     </a></b>
   </h3>
@@ -72,10 +72,10 @@
                {% if not game.solving_enabled and not game.voting_enabled %}
                  disabled="disabled"
                {% endif %}
-               value="{% if score >= 0 %}{{ score }}{% endif %}">
+               value="{{ score }}">
         </label>
       {% endfor %}
-      (Numeric scores, 0.0-5.0)
+      Numeric scores, 0.0-5.0.  Aim for 3.0 average.
     </p>
 
     <textarea name="comment" cols="60" rows="6" class="leftside">
@@ -92,7 +92,7 @@
 
   {% if puzzle.solution_blob %}
     <p>Download:
-      <b><a href="/download?p={{ puzzle.number }}&t={{ team.key_id }}&f=s">
+      <b><a href="/download?p={{ puzzle.number|urlencode }}&t={{ team.key_id }}&f=s">
         {{ puzzle.solution_blob.filename|default:"file" }}
       </a></b>
      </p>
