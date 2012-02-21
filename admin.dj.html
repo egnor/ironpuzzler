@@ -50,7 +50,7 @@
       </td>
       {% for work in team.works %}
         <td align="center">
-          {% if work.puzzle.author == team %}
+          {% if work.puzzle.author.key == team.key %}
             <a href="/puzzle?t={{ team.key_id }}&p={{ work.puzzle.number|urlencode }}" 
                class="puzzle_author" title="{{ team.name }} wrote #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;">
               A

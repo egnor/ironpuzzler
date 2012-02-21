@@ -14,7 +14,7 @@
 <h3>Team:
 <select name="t">
 {% for team in teams|dictsort:"name" %}
-  <option {% if team == cookie_team %} selected {% endif %}
+  <option {% if team.key == cookie_team.key %} selected {% endif %}
           value="{{ team.key_id }}">{{ team.name }}</option>
 {% endfor %}
 </select>
@@ -35,7 +35,7 @@
       <td>Bonus</td>
     </tr>
     {% for team in teams|dictsort:"score" reversed %}
-      <tr {% if team == cookie_team %} class="your_team" {% endif %}>
+      <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ forloop.counter }}. {{ team.name }}</nobr></td>
         <td align="center"><b>{{ team.score }}</b></td>
         <td align="center">{{ team.solve_score }}</td>
@@ -78,7 +78,7 @@
 
     {% for team in teams|dictsort:"solve_score" reversed %}
       {% regroup team.works by puzzle.key_name as work_types %}
-      <tr {% if team == cookie_team %} class="your_team" {% endif %}>
+      <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
 
         <td align="center"><b>{{ team.solve_score }}</b></td>
@@ -86,7 +86,7 @@
         {% for type in work_types %}
           <td class="score_{{ type.grouper }}"> </td>
           {% for work in type.list %}
-            {% if work.puzzle.author == team %}
+            {% if work.puzzle.author.key == team.key %}
               <td align="center" class="score_{{ type.grouper }}" title="{{ team.name }} wrote #{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot;"> A </td>
             {% else %} {% if work.score %}
               <td align="center" class="score_{{ type.grouper }}" title="{{ team.name }} earned {{ work.score }} points for solving&#10;#{{ work.puzzle.number }} &quot;{{ work.puzzle.title }}&quot; {{ work.solve_time|timesince }} ago">
@@ -135,7 +135,7 @@
     </tr>
 
     {% for team in teams|dictsort:"wrote_score" reversed %}
-      <tr {% if team == cookie_team %} class="your_team" {% endif %}>
+      <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
 
         <td align="center"><b>{{ team.wrote_score }}</b></td>
@@ -162,7 +162,7 @@
 
   <table>
     {% for team in teams %}
-      <tr {% if team == cookie_team %} class="your_team" {% endif %}>
+      <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ forloop.counter }}. {{ team.name }}</nobr></td>
         <td>
           {{ team.solve_count|default:"no" }}
