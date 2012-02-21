@@ -78,14 +78,18 @@ class TeamPage(webapp.RequestHandler):
 
     if game.voting_enabled:
       sr = range(len(model.Feedback().scores))
-      for p in model.Puzzle.all().ancestor(game):
+      puzzles = model.Puzzle.all().ancestor(game)
+      feedback_keys = [
+          db.Key.from_path("Feedback", str(team.key()), parent=p.key())
+          for p in puzzles]
+      for p, f in zip(puzzles, model.Feedback.get(feedback_keys)):
         n = p.number
         score = [self.request.get("score.%s.%d" % (n, s)) for s in sr]
         score_orig = [self.request.get("score.%s.%d.orig" % (n, s)) for s in sr]
-        if score != score_orig:
-          feedback = model.Feedback.get_or_insert(str(team.key()), parent=p)
-          for s in sr: feedback.scores[s] = puzzle.NormalizeScore(score[s])
-          feedback.put()
+        if (score != score_orig) or not f:
+          if not f: f = model.Feedback(parent=p, key_name=str(team.key()))
+          for s in sr: f.scores[s] = puzzle.NormalizeScore(score[s])
+          f.put()
 
     self.redirect("/team?t=%d" % team.key().id())
     team.name = self.request.get("name") or team.name

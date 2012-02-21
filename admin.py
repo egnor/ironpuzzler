@@ -45,7 +45,10 @@ class AdminPage(webapp.RequestHandler):
     team_by_key = {}
     for team in model.Team.all().ancestor(game):
       team_props = team_by_key[team.key()] = model.GetProperties(team)
-      team_props["works"] = []
+      team_props.update({
+        "feedback_count": 0,
+        "works": [],
+      })
       props["teams"].append(team_props)
 
     puzzle_by_key = {}
@@ -53,9 +56,10 @@ class AdminPage(webapp.RequestHandler):
       puzzle_props = puzzle_by_key[p.key()] = model.GetProperties(p)
       author_props = team_by_key.get(p.key().parent(), {})
       puzzle_props.update({
-        "solve_count": 0,
         "author": author_props.get("name"),
         "author_id": author_props.get("key_id"),
+        "comment_count": 0,
+        "solve_count": 0,
       })
       props["puzzles"].append(puzzle_props)
 
@@ -67,7 +71,6 @@ class AdminPage(webapp.RequestHandler):
           "guess_count": 0,
         }
         tp["works"].append(work_props)
-        
 
     for guess in model.Guess.all().ancestor(game).order("timestamp"):
       wp = work_by_keys[(guess.team.key(), guess.key().parent())]
@@ -76,6 +79,13 @@ class AdminPage(webapp.RequestHandler):
         wp["puzzle"]["solve_count"] += 1
         wp["solve_time"] = guess.timestamp
         wp["solve_rank"] = Ordinal(wp["puzzle"]["solve_count"])
+
+    for feedback in model.Feedback.all().ancestor(game):
+      team_props = team_by_key[db.Key(feedback.key().name())]
+      team_props["feedback_count"] += 1
+      if feedback.comment and feedback.comment.strip():
+        puzzle_props = puzzle_by_key[feedback.key().parent()]
+        puzzle_props["comment_count"] += 1
 
     self.response.out.write(template.render("admin.dj.html", props))
 

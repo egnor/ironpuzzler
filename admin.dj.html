@@ -33,6 +33,7 @@
   <tr>
     <td> </td>
     <td>Bonus</td>
+    <td>Voted</td>
     {% for puzzle in puzzles %}
       <td align="center">
         <a href="/puzzle?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}" title="#{{ puzzle.number }} &quot;{{ puzzle.title }}&quot; ({{ puzzle.key_name }}) by {{ puzzle.author }}">#{{ puzzle.number }}</a>
@@ -47,6 +48,9 @@
       <td>
         <input type="text" size="3" name="bonus.{{ team.key_id }}"
                value="{{ team.bonus|default:0.0 }}">
+      </td>
+      <td align="center">
+        {% if team.feedback_count %}{{ team.feedback_count }}{% endif %}
       </td>
       {% for work in team.works %}
         <td align="center">
@@ -105,9 +109,10 @@
   <td>Author</td>
   <td>Puz. file</td>
   <td>Sol. file</td>
-  <td>Sol. text</td>
-  <td>Ans.</td>
-  <td>Err.</td>
+  <td align="center">Sol. text</td>
+  <td align="center">Ans.</td>
+  <td align="center">Err.</td>
+  <td align="center">Com.</td>
 </tr>
 {% for puzzle in puzzles %}
 <input type="hidden" name="number.{{ puzzle.author_id }}.{{ puzzle.key_name }}.orig" value="{{ puzzle.number }}">
@@ -122,9 +127,10 @@
   <td>{% if puzzle.solution_blob %}
     <a href="/download?t={{ puzzle.author_id }}&p={{ puzzle.number|urlencode }}&f=s">{{ puzzle.solution_blob.filename|default:"file" }}</a>
   {% endif %}</td>
-  <td>{% if puzzle.solution %}Y{% endif %}</td>
-  <td>{% if puzzle.answers %}{{ puzzle.answers|length }}{% endif %}</td>
-  <td>{% if puzzle.errata %}Y{% endif %}</td>
+  <td align="center">{% if puzzle.solution %}Y{% endif %}</td>
+  <td align="center">{% if puzzle.answers %}{{ puzzle.answers|length }}{% endif %}</td>
+  <td align="center">{% if puzzle.errata %}Y{% endif %}</td>
+  <td align="center">{% if puzzle.comment_count %}{{ puzzle.comment_count }}{% endif %}</td>
 </tr>
 {% endfor %}
 </table>
