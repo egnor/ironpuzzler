@@ -14,7 +14,6 @@
 <h3>Team:
 <select name="t">
   {% for team in teams|dictsort:"name" %}
-  {# {% for team in teams %} #}
     <option {% if team.key == cookie_team.key %} selected {% endif %}
             value="{{ team.key_id }}">{{ team.name }}</option>
   {% endfor %}
@@ -36,7 +35,6 @@
       <td>Bonus</td>
     </tr>
     {% for team in teams|dictsort:"score" reversed %}
-    {# {% for team in teams reversed %} #}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ forloop.counter }}. {{ team.name }}</nobr></td>
         <td align="center"><b>{{ team.score }}</b></td>
@@ -79,7 +77,6 @@
     </tr>
 
     {% for team in teams|dictsort:"solve_score" reversed %}
-    {# {% for team in teams reversed %} #}
       {% regroup team.works by puzzle.key_name as work_types %}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
@@ -138,7 +135,6 @@
     </tr>
 
     {% for team in teams|dictsort:"wrote_score" reversed %}
-    {# {% for team in teams reversed %} #}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
         <td><nobr>{{ team.name }}</nobr></td>
 
