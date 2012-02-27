@@ -151,7 +151,7 @@
         <td align="center" class="score_nonpaper" title="{{ team.name }} earned {{ team.wrote.nonpaper.scores.0 }} (&#215;2)&#10;Fun points for #{{ team.wrote.nonpaper.number }} &quot;{{ team.wrote.nonpaper.title }}&quot;">{{ team.wrote.nonpaper.scores.0 }}&#215;2</td>
         <td align="center" class="score_nonpaper" title="{{ team.name }} earned {{ team.wrote.nonpaper.scores.1 }} &#10;Presentation points for #{{ team.wrote.nonpaper.number }} &quot;{{ team.wrote.nonpaper.title }}&quot;">{{ team.wrote.nonpaper.scores.1 }}</td>
         <td align="center" class="score_nonpaper" title="{{ team.name }} earned {{ team.wrote.nonpaper.scores.2 }} &#10;Ingredients points for #{{ team.wrote.nonpaper.number }} &quot;{{ team.wrote.nonpaper.title }}&quot;">{{ team.wrote.nonpaper.scores.2 }}</td>
-        <td align="center" class="score_nonpaper" title="{{ team.name }} earned {{ team.wrote.nonpaper.scores.2 }} &#10;total points for #{{ team.wrote.nonpaper.number }} &quot;{{ team.wrote.nonpaper.title }}&quot;">{{ team.wrote.nonpaper.score }}</td>
+        <td align="center" class="score_nonpaper" title="{{ team.name }} earned {{ team.wrote.nonpaper.score }} &#10;total points for #{{ team.wrote.nonpaper.number }} &quot;{{ team.wrote.nonpaper.title }}&quot;">{{ team.wrote.nonpaper.score }}</td>
       </tr>
     {% endfor %}
   </table>
@@ -202,7 +202,6 @@
       </tr>
     {% endfor %}
   </table>
-
 {% endif %}
 
 {% if game.solving_enabled %}
