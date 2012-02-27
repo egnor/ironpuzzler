@@ -76,7 +76,7 @@ class TeamPage(webapp.RequestHandler):
       pp = puzzle_props.get(review.key().parent())
       if pp:
         if review.comment and review.comment.strip(): pp["comment_count"] += 1
-        if review.scores != no_scores: pp["vote_count"] += 1
+        pp["vote_count"] += 1
 
     for guess in model.Guess.all().ancestor(game):
       pp = puzzle_props.get(guess.parent_key())
