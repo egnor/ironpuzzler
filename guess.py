@@ -1,16 +1,15 @@
 # Iron Puzzler submission page handler
 
-import datetime
-import re
-
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+import datetime
+import re
 import login
 import model
+
 from puzzle import MaybeGetPuzzle, NormalizeAnswer, NormalizeScore
 
 # Forbid more than this many guesses in this many seconds.

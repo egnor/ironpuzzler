@@ -1,14 +1,35 @@
 # Iron Puzzler team page handler
 
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
+import logging
 import model
 import puzzle
+
+
+def NormalizeVector(vector, minimum, maximum, target):
+  saved = vector[:]
+
+  diff = target * len(vector) - sum(vector)
+  remain = len(vector)
+  if diff > 0:
+    avail = [(maximum - v, i) for i, v in enumerate(vector)]
+  else:
+    avail = [(v - minimum, i) for i, v in enumerate(vector)]
+  for amt, i in sorted(avail):
+    if diff > 0:
+      adjust = min(diff / remain, amt)
+    else:
+      adjust = max(diff / remain, -amt)
+    vector[i] += adjust
+    diff -= adjust
+    remain -= 1
+
+  logging.info("%s -> %s" % (saved, vector))
 
 
 class TeamPage(webapp.RequestHandler):
@@ -82,14 +103,25 @@ class TeamPage(webapp.RequestHandler):
       feedback_keys = [
           db.Key.from_path("Feedback", str(team.key()), parent=p.key())
           for p in puzzles]
+      feedback = {}
       for p, f in zip(puzzles, model.Feedback.get(feedback_keys)):
+        if p.key().parent() == team.key(): continue  # No self voting
         n = p.number
         score = [self.request.get("score.%s.%d" % (n, s)) for s in sr]
         score_orig = [self.request.get("score.%s.%d.orig" % (n, s)) for s in sr]
         if (score != score_orig) or not f:
           if not f: f = model.Feedback(parent=p, key_name=str(team.key()))
           for s in sr: f.scores[s] = puzzle.NormalizeScore(score[s])
-          f.put()
+          if not self.request.get("normalize"): f.put()
+        feedback.setdefault(p.key().name(), []).append(f)
+
+      if self.request.get("normalize"):
+        for flist in feedback.values():
+          for i in range(len(flist[0].scores)):
+            vector = [f.scores[i] for f in flist]
+            NormalizeVector(vector, 0, 5, 3)
+            for f, s in zip(flist, vector): f.scores[i] = round(s * 10) / 10.0
+          for f in flist: f.put()
 
     self.redirect("/team?t=%d" % team.key().id())
     team.name = self.request.get("name") or team.name

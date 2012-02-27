@@ -1,10 +1,51 @@
 <html>
 <head>
-<title>{{ team.name }} - Iron Puzzler</title>
+<title>{{ team.name }} - Iron Puzzler {{ game.location }}</title>
 <link rel="stylesheet" href="static/style.css">
-</head><body><div class="pagecontent">
+<script>
+// Update points allocated
+function calc(puzz_type, score_index) {
+  var total = 0.0, num = 0;
+  for (num = 0; ; num++) {
+    var id = "score." + puzz_type + "." + num + "." + score_index;
+    var input = document.getElementById(id);
+    if (!input) break;
+    score = parseFloat(input.value);
+    if (score == NaN || score < 0.0 || score > 5.0) {
+      input.style.background = "#FFAAAA";
+    } else {
+      input.style.background = "";
+      total += score;
+    }
+  }
 
-<h2><a href="/">Iron Puzzler</a> &raquo; {{ team.name }}</h2>
+  var out = document.getElementById("total." + puzz_type + "." + score_index);
+  var target = num * 3.0, diff = Math.abs(total - target);
+  out.value = Math.round(total * 100000.0) / 100000.0;  // Avoid "0.999999999"
+  if (diff < 1.0) {
+    out.style.background = "#88FF88";
+  } else if (diff < 3.0) {
+    out.style.background = "#FFFF00";
+  } else {
+    out.style.background = "#FFAAAA";
+  }
+
+  var ref = document.getElementById("target." + puzz_type);
+  ref.innerHTML = target;
+}
+
+{% regroup other_puzzles by key_name as puzzle_types %}
+function calc_all() {
+  {% for type in puzzle_types %}
+    {% for score in type.list.0.feedback.scores %}
+      calc("{{ type.grouper }}", {{ forloop.counter0 }});
+    {% endfor %}
+  {% endfor %}
+}
+</script>
+</head><body onload="calc_all();"><div class="pagecontent">
+
+<h2><a href="/">IP {{ game.location }}</a> &raquo; {{ team.name }}</h2>
 
 {% if "set_password" in error %}
   <p class="error">New password confirmation did not match!</p>
@@ -14,37 +55,64 @@
 
 <h3>Voting</h3>
 
-<form action="/team" method="post">
+<form name="voting" action="/team" method="post">
 <input type="hidden" name="t" value="{{ team.key_id }}">
 
+<p>Use numeric scores, 0.0-5.0.</p>
+
+<p>Aim for 3.0 average per category -- not required, but your "generosity" will
+be published.</p>
+
+<p>Click the puzzle to see the solution or to leave comments for the author.</p>
+
 <table>
-  <tr> <td> </td> <td>Fun</td> <td>Pres.</td> <td>Ingr.</td> </tr>
-{% for puzzle in other_puzzles %}
+{% for type in puzzle_types %}
+
+  <tr><td height="5"> </td></tr>
   <tr>
-    <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>
-    {% for score in puzzle.feedback.scores %}
+    <td><b>{{ type.grouper|capfirst }}</b></td>
+    <td>Fun</td> <td>Pres.</td> <td>Ingr.</td>
+  </tr>
+
+  {% for puzzle in type.list %}
+    <tr>
+      <td><nobr><a href="/guess?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">#{{ puzzle.number }} {{ puzzle.title }}</a></nobr></td>
+      {% for score in puzzle.feedback.scores %}
+        <td>
+          <input type="hidden"
+                 name="score.{{ puzzle.number }}.{{ forloop.counter0 }}.orig"
+                 value="{{ score }}">
+          <input type="text" size="3"
+                 {% if not game.voting_enabled %} disabled {% endif %}
+                 id="score.{{ type.grouper }}.{{ forloop.parentloop.counter0 }}.{{ forloop.counter0 }}"
+                 onChange='calc("{{ type.grouper }}", {{ forloop.counter0 }});'
+                 name="score.{{ puzzle.number }}.{{ forloop.counter0 }}"
+                 value="{{ score }}">
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+
+  <tr>
+    <td>Generosity (aim for <span id="target.{{ type.grouper }}"></span>)</td>
+    {% for score in type.list.0.feedback.scores %}
       <td>
-        <input type="hidden"
-               name="score.{{ puzzle.number }}.{{ forloop.counter0 }}.orig"
-               value="{{ score }}">
-        <input type="text" size="3"
-               {% if not game.voting_enabled %} disabled="disabled" {% endif %}
-               name="score.{{ puzzle.number }}.{{ forloop.counter0 }}"
-               value="{{ score }}">
+        <input type="text" size="3" readonly
+               id="total.{{ type.grouper }}.{{ forloop.counter0 }}">
       </td>
     {% endfor %}
-    {% if forloop.first %}
-    <td valign="top" rowspan="{{ other_puzzles|length }}">
-      <p>Numeric scores, 0.0-5.0.<br>Aim for 3.0 average.</p>
-      <p>Click the puzzle to see the solution or leave the author comments.</p>
-    </td>
-    {% endif %}
   </tr>
+  <tr><td height="5"> </td></tr>
+
 {% endfor %}
 </table>
 
 {% if game.voting_enabled %}
-<button>Save votes</button>
+<p><button>Save votes</button>
+<label>
+  <input type="checkbox" name="normalize" value="true">
+  Auto-normalize scores to 3.0 average
+</p>
 {% endif %}
 </form>
 
@@ -107,7 +175,7 @@
 <h3>Your puzzles</h3>
 
 <table>
-  {% for puzzle in team_puzzles|dictsort:"key_name" %}
+  {% for puzzle in team_puzzles %}
     <tr>
       <td>
         <b>
@@ -122,12 +190,14 @@
           {% endif %}
         </b>
       </td>
+
       <td>
         {% if puzzle.solve_teams %}
           {{ puzzle.solve_teams|length }}
           solve{{ puzzle.solve_teams|length|pluralize }}
         {% endif %}
       </td>
+
       {% if game.results_enabled %}
         <td>
           {% if puzzle.vote_count %}
@@ -140,6 +210,30 @@
             comment{{ puzzle.comment_count|pluralize }}
           {% endif %}
         </td>
+      {% endif %}
+
+      {% if puzzle.answers %}
+        <td class="guess_correct">
+          {{ puzzle.answers|length }} answer{{ puzzle.answers|pluralize }}
+        </td>
+      {% else %}
+        <td class="guess_incorrect">Needs answers</td>
+      {% endif %}
+
+      {% if puzzle.solution %}
+        <td class="guess_correct">Has solution</td>
+      {% else %}
+        <td class="guess_incorrect">Needs solution</td>
+      {% endif %}
+
+      {% if puzzle.puzzle_blob %}
+        <td class="guess_correct">Has file</td>
+      {% else %}
+        {% if puzzle.key_name == "paper" %}
+          <td class="guess_incorrect">Needs puzzle file</td>
+        {% else %}
+          <td class="guess_none">File optional</td>
+        {% endif %}
       {% endif %}
     </tr>
   {% empty %}

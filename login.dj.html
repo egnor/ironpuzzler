@@ -1,13 +1,13 @@
 <html>
 <head>
-<title>{{ team.name }} Login - Iron Puzzler</title>
+<title>{{ team.name }} Login - Iron Puzzler {{ game.location }}</title>
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
 <form action="/login" method="post">
 <input type="hidden" name="u" value="{{ target }}">
 <input type="hidden" name="t" value="{{ team.key_id }}">
 
-<h2><a href="/">Iron Puzzler</a> &raquo; Login: {{ team.name }}</h2>
+<h2><a href="/">IP {{ game.location }}</a> &raquo; Login: {{ team.name }}</h2>
 
 {% if "password" in error %}
   <h3 class="error">Invalid Password</h3>

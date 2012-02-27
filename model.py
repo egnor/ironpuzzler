@@ -1,11 +1,11 @@
 # Iron Puzzler data model
 
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 class Game(db.Model):
   """ No parent; Key name: static game ID (see GetGame()) """
+  location = db.StringProperty(default="Somewhere")
   ingredients = db.StringListProperty()
   ingredients_visible = db.BooleanProperty()
   admin_users = db.StringListProperty()
@@ -44,7 +44,7 @@ class Guess(db.Model):
 
 class Feedback(db.Model):
   """ Parent: Puzzle; Key name: Key ID of team giving feedback """
-  scores = db.ListProperty(float, default=[3., 3., 3.])  # negative means N/A
+  scores = db.ListProperty(float, default=[3., 3., 3.])
   comment = db.StringProperty()
 
 

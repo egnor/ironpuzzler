@@ -1,17 +1,20 @@
 <html>
 <head>
-<title>Admin - Iron Puzzler</title>
+<title>Admin - Iron Puzzler {{ game.location }}</title>
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
 
 <h2 style="margin-bottom: 0">
-<a href="/">Iron Puzzler</a> &raquo; Administration</h2>
+<a href="/">IP {{ game.location }}</a> &raquo; Administration</h2>
 
 <p style="margin-top: 0; text-indent: -25px">
 <em>{{ user_email }}</em>
 (<a href="{{ user_logout_url }}">sign out</a>).</p>
 
 <form action="/admin" method="post">
+<h3>Location:
+<input type="text" name="location" value="{{ game.location }}"></h3>
+
 <h3>Secret ingredients</h3>
 
 <p>
@@ -50,7 +53,11 @@
                value="{{ team.bonus|default:0.0 }}">
       </td>
       <td align="center">
-        {% if team.feedback_count %}{{ team.feedback_count }}{% endif %}
+        {% if team.feedback_count %}
+          {{ team.feedback_count }}
+        {% else %}
+          --
+        {% endif %}
       </td>
       {% for work in team.works %}
         <td align="center">

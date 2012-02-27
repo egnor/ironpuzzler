@@ -3,7 +3,6 @@
 import random
 import re
 
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -81,11 +80,14 @@ class AdminPage(webapp.RequestHandler):
         wp["solve_rank"] = Ordinal(wp["puzzle"]["solve_count"])
 
     for feedback in model.Feedback.all().ancestor(game):
-      team_props = team_by_key[db.Key(feedback.key().name())]
-      team_props["feedback_count"] += 1
-      if feedback.comment and feedback.comment.strip():
-        puzzle_props = puzzle_by_key[feedback.key().parent()]
-        puzzle_props["comment_count"] += 1
+      if feedback.key().parent().parent() == db.Key(feedback.key().name()):
+        feedback.delete()  # Remove bogus self-votes from older versions.
+      else:
+        team_props = team_by_key[db.Key(feedback.key().name())]
+        team_props["feedback_count"] += 1
+        if feedback.comment and feedback.comment.strip():
+          puzzle_props = puzzle_by_key[feedback.key().parent()]
+          puzzle_props["comment_count"] += 1
 
     self.response.out.write(template.render("admin.dj.html", props))
 
@@ -96,6 +98,7 @@ class AdminPage(webapp.RequestHandler):
 
     ingredients = [self.request.get("ingredient%d" % i) for i in range(3)]
     admin_users = re.split(r'[,\s]+', self.request.get("admin_users"))
+    game.location = self.request.get("location")
     game.ingredients = [i for i in ingredients if i]
     game.ingredients_visible = bool(self.request.get("ingredients_visible"))
     game.admin_users = [u for u in admin_users if u]

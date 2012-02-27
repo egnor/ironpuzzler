@@ -1,21 +1,17 @@
 body { font-family: Arial, sans-serif; }
 
 h1,h2,h3 { text-indent: -25px; }
-
 h2 { margin: 0.5em 0 0.75em 0; }
-
 h3 { margin: 1em 0 0.5em 0; }
-
 h4 { margin: 0.5em 0 0.5em 0; }
+h1 em,h2 em,h3 em,h4 em { font-weight: normal; }
 
 p { margin: 0.5em 0 0.5em 0; }
 
 form { margin: 0 0 0 0; }
-
-h1 em,h2 em,h3 em,h4 em { font-weight: normal; }
+input[readonly] { border: 2px solid #CCCCCC; }
 
 table { border-collapse: collapse; border-spacing: 0; }
-
 td, th { padding: 0 1em 0 0; }
 
 .pageheader {
@@ -48,9 +44,7 @@ td, th { padding: 0 1em 0 0; }
 .error { color: #FF0000; }
 
 .guess_correct { color: #00CC00; text-decoration: none; font-weight: bold; }
-
 .guess_incorrect { color: #FF0000; text-decoration: none; }
-
 .guess_none { color: #666666; text-decoration: none; }
 
 .puzzle_author { color: #666666; text-decoration: none; font-weight: bold; }

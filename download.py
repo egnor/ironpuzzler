@@ -1,6 +1,5 @@
 # Iron Puzzler puzzle attachment download handler
 
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -9,8 +8,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import login
 import model
-from puzzle import MaybeGetPuzzle
 
+from puzzle import MaybeGetPuzzle
 
 class DownloadHandler(blobstore_handlers.BlobstoreDownloadHandler):
   def get(self):

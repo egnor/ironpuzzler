@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Iron Puzzler</title>
+<title>Iron Puzzler {{ game.location }}</title>
 <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
 
 {% if game.login_enabled %}
 <form action="/login" method="post">
-<h3>Team:
+<h3>{{ game.location }} team:
 <select name="t">
   {% for team in teams|dictsort:"name" %}
     <option {% if team.key == cookie_team.key %} selected {% endif %}
@@ -29,10 +29,10 @@
   <table>
     <tr>
       <td> </td>
-      <td><b>Total</b></td>
-      <td>Solving</td>
-      <td>Voting</td>
-      <td>Bonus</td>
+      <td align="center"><b>Total</b></td>
+      <td align="center">Solving</td>
+      <td align="center">Voting</td>
+      <td align="center">Bonus</td>
     </tr>
     {% for team in teams|dictsort:"score" reversed %}
       <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
@@ -155,6 +155,54 @@
       </tr>
     {% endfor %}
   </table>
+
+  <h3>Generosity (FYI)</h3>
+
+  <table>
+    <tr>
+      <td> </td>
+
+      <td class="score_paper"> </td>
+      <td align="center" class="score_paper" colspan="3"><b>Paper</b></td>
+      <td> </td>
+
+      <td class="score_nonpaper"> </td>
+      <td align="center" class="score_nonpaper" colspan="3"><b>Nonpaper</b></td>
+    </tr>
+
+    <tr>
+      <td> </td>
+
+      <td class="score_paper"> </td>
+      <td align="center" class="score_paper"><em>Fun</em></td>
+      <td align="center" class="score_paper"><em>Pres.</em></td>
+      <td align="center" class="score_paper"><em>Ingr.</em></td>
+      <td> </td>
+
+      <td class="score_nonpaper"> </td>
+      <td align="center" class="score_nonpaper"><em>Fun</em></td>
+      <td align="center" class="score_nonpaper"><em>Pres.</em></td>
+      <td align="center" class="score_nonpaper"><em>Ingr.</em></td>
+    </tr>
+
+    {% for team in teams|dictsort:"name" %}
+      <tr {% if team.key == cookie_team.key %} class="your_team" {% endif %}>
+        <td><nobr>{{ team.name }}</nobr></td>
+
+        <td class="score_paper"> </td>
+        <td align="center" class="score_paper" title="{{ team.name }} gave out {{ team.generosity.paper.0|default:"no" }} Fun points">{{ team.generosity.paper.0|default:"--" }}</td>
+        <td align="center" class="score_paper" title="{{ team.name }} gave out {{ team.generosity.paper.1|default:"no" }} Presentation points">{{ team.generosity.paper.1|default:"--" }}</td>
+        <td align="center" class="score_paper" title="{{ team.name }} gave out {{ team.generosity.paper.2|default:"no" }} Ingredients points">{{ team.generosity.paper.2|default:"--" }}</td>
+        <td> </td>
+
+        <td class="score_nonpaper"> </td>
+        <td align="center" class="score_nonpaper" title="{{ team.name }} gave out {{ team.generosity.nonpaper.0|default:"no" }} Fun points">{{ team.generosity.nonpaper.0|default:"--" }}</td>
+        <td align="center" class="score_nonpaper" title="{{ team.name }} gave out {{ team.generosity.nonpaper.1|default:"no" }} Presentation points">{{ team.generosity.nonpaper.1|default:"--" }}</td>
+        <td align="center" class="score_nonpaper" title="{{ team.name }} gave out {{ team.generosity.nonpaper.2|default:"no" }} Ingredients points">{{ team.generosity.nonpaper.2|default:"--" }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
 {% endif %}
 
 {% if game.solving_enabled %}
@@ -187,8 +235,9 @@
 
 <h3>About</h3>
 
-<p>Iron Puzzler is a two-day weekend event where contesting teams
-create puzzles on the first day and solve puzzles on the second day.</p>
+<p><a href="http://www.ironpuzzler.com/">Iron Puzzler</a> is a weekend contest
+where teams create puzzles on the first day and solve puzzles on the second
+day.  This website tracks progress in {{ game.location }}.</p>
 
 </div>  <!-- end .pagecontent -->
 

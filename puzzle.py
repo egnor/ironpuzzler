@@ -1,10 +1,5 @@
 # Iron Puzzler puzzle page handler
 
-import datetime
-import re
-import urllib
-
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -12,9 +7,11 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+import datetime
 import login
 import model
 import re
+import urllib
 
 def MaybeGetPuzzle(ancestor, request):
   n = request.get("p")
@@ -60,15 +57,15 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
       "solves": [],
     }
 
-    props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
-    props["comments"].sort(key=unicode.lower)
-    props["votes"].sort(reverse=True)
-
     no_scores = model.Feedback().scores
     for feedback in model.Feedback.all().ancestor(puzzle):
       comment = (feedback.comment or "").strip()
       if comment: props["comments"].append(comment)
-      if feedback.scores != no_scores: props["votes"].append(feedback.scores)
+      props["votes"].append(feedback.scores)
+
+    props["puzzle"]["answers"] = "\n".join(props["puzzle"].get("answers", []))
+    props["comments"].sort(key=unicode.lower)
+    props["votes"].sort(reverse=True)
 
     solvers = {}
     for guess in model.Guess.all().ancestor(puzzle).order("timestamp"):

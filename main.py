@@ -1,6 +1,5 @@
 # Iron Puzzler main page handler
 
-from google.appengine.dist import use_library;  use_library('django', '1.2')
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -23,6 +22,7 @@ class MainPage(webapp.RequestHandler):
     for team in model.Team.all().ancestor(game):
       team_props = team_by_key[team.key()] = model.GetProperties(team)
       team_props.update({
+        "generosity": {},
         "score": team_props.get("bonus") or 0.0,
         "solve_count": 0,
         "solve_score": 0,
@@ -54,7 +54,12 @@ class MainPage(webapp.RequestHandler):
     for feedback in model.Feedback.all().ancestor(game):
       puzzle_props = puzzle_by_key[feedback.key().parent()]
       puzzle_props["votes"].append(feedback.scores)
-
+      puzzle_type = puzzle_props["key_name"]
+      team_props = team_by_key[db.Key(feedback.key().name())]
+      generosity = team_props["generosity"].setdefault(
+          puzzle_props["key_name"], [0] * len(feedback.scores))
+      generosity[:] = [a + b for a, b in zip(generosity, feedback.scores)]
+      
     work_by_keys = {}
     for team_props in props["teams"]:
       for puzzle_props in props["puzzles"]:
@@ -83,7 +88,13 @@ class MainPage(webapp.RequestHandler):
         wrote_scores = puzzle_props["scores"] = [0 for s in no_scores]
         for scores in puzzle_props["votes"]:
           for i in range(len(wrote_scores)):
-            if i < len(scores) and scores[i] >= 0: wrote_scores[i] += scores[i]
+            if i < len(scores): wrote_scores[i] += scores[i]
+
+        unvoted = len(team_by_key) - len(puzzle_props["votes"]) - 1
+        if unvoted > 0:
+          for i in range(len(wrote_scores)):
+            wrote_scores[i] += no_scores[i] * unvoted
+
         points = 2 * wrote_scores[0] + sum(wrote_scores[1:])
         puzzle_props["score"] = points
         team_props["score"] += points

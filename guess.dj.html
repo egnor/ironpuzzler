@@ -2,13 +2,13 @@
 <head>
 <title>
   #{{ puzzle.number }} {{ puzzle.title }} ({{ puzzle.key_name }})
-  - {{ team.name }} - Iron Puzzler
+  - {{ team.name }} - Iron Puzzler {{ game.location }}
 </title>
 <link rel="stylesheet" href="static/style.css">
 </head><body><div class="pagecontent">
 
 <h2>
-  <a href="/">Iron Puzzler</a> &raquo;
+  <a href="/">IP {{ game.location }}</a> &raquo;
   <a href="/team?t={{ team.key_id }}">{{ team.name }}</a> &raquo;
   {% if game.voting_enabled %}
     Feedback:
