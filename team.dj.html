@@ -220,17 +220,11 @@ be published.</p>
         <td class="guess_incorrect">Needs answers</td>
       {% endif %}
 
-      {% if puzzle.solution %}
-        <td class="guess_correct">Has solution</td>
-      {% else %}
-        <td class="guess_incorrect">Needs solution</td>
-      {% endif %}
-
-      {% if puzzle.puzzle_blob %}
-        <td class="guess_correct">Has file</td>
+      {% if puzzle.puzzle_blob and puzzle.solution_blob %}
+        <td class="guess_correct">Has files</td>
       {% else %}
         {% if puzzle.key_name == "paper" %}
-          <td class="guess_incorrect">Needs puzzle file</td>
+          <td class="guess_incorrect">Needs file upload</td>
         {% else %}
           <td class="guess_none">File optional</td>
         {% endif %}
