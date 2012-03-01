@@ -82,7 +82,7 @@ Visible to everyone.  Avoid spoilers!  Do not identify your team!</p>
 <textarea name="solution" cols="60" rows="15" class="leftside">
 {{ puzzle.solution }}</textarea>
 <p class="rightside">Complete walkthrough.
-Visible to everyone once they solve the puzzle or voting starts.
+Visible to teams once they solve the puzzle or voting starts.
 Do not identify your team!</p>
 
 <h3>Uploads</h3>
@@ -114,7 +114,11 @@ Do not identify your team!</p>
       <br>Replace with:
     {% endif %}
     <input type="file" name="solution_file"><br>
-    You may upload additional solution material here (eg. a photo).<br>
+    {% if puzzle.key_name == "paper" %}
+      Upload the paper solution here.
+    {% else %}
+      You may upload additional solution material here (eg. a photo).<br>
+    {% endif %}
     Teams get access once they solve the puzzle or start voting.
   </label>
 </p>
