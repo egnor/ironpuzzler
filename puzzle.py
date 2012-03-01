@@ -91,7 +91,7 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
       if arg.endswith(".orig"): continue
       orig_value = urllib.unquote(self.request.get(arg + ".orig", ""))
       new_value = self.request.get(arg).replace("\r\n", "\n")
-      if new_value != orig_value: updates[arg] = new_value
+      if new_value != orig_value: updates[arg] = new_value.strip()
 
     for blobinfo in self.get_uploads(field_name = "puzzle_file"): 
       if puzzle.puzzle_blob: blobstore.delete(puzzle.puzzle_blob.key())
@@ -113,7 +113,8 @@ class PuzzlePage(blobstore_handlers.BlobstoreUploadHandler):
       puzzle.errata_timestamp = datetime.datetime.now()
       puzzle.errata = updates.get("errata")
 
-    if "solution" in updates: puzzle.solution = updates.get("solution")
+    if "solution" in updates:
+      puzzle.solution = updates.get("solution")
 
     puzzle.put()
 
