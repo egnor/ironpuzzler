@@ -14,10 +14,10 @@ import puzzle
 
 PUZZLE_TYPES = ["paper", "nonpaper"]
 
-def IsUserAdmin(game):
-  if users.is_current_user_admin(): return True
+def GetAdminEmail(game):
   user = users.get_current_user()
-  return user and (user.email() in game.admin_users)
+  if users.is_current_user_admin(): return user.email()
+  return user and (user.email() in game.admin_users) and user.email()
 
 
 def Ordinal(n):
@@ -28,15 +28,15 @@ def Ordinal(n):
 class AdminPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
-    user = users.get_current_user()
-    if not user or not IsUserAdmin(game):
+    admin_email = GetAdminEmail(game)
+    if not admin_email:
       # TODO(egnor): Without multilogin, this creates redirect loops.
       return self.redirect(users.create_login_url(dest_url="/admin"))
 
     props = {
       "game": model.GetProperties(game),
-      "user_email": user.email(),
-      "user_logout_url": users.create_logout_url(dest_url="/admin"),
+      "admin_email": admin_email,
+      "admin_logout_url": users.create_logout_url(dest_url="/admin"),
       "puzzles": [],
       "teams": [],
     }
@@ -94,7 +94,7 @@ class AdminPage(webapp.RequestHandler):
 
   def post(self):
     game = model.GetGame()
-    if not IsUserAdmin(game): return self.error(403)
+    if not GetAdminEmail(game): return self.error(403)
 
     ingredients = [self.request.get("ingredient%d" % i) for i in range(3)]
     admin_users = re.split(r'[,\s]+', self.request.get("admin_users"))

@@ -21,7 +21,7 @@ def GetTeamOrRedirect(game, request, response):
     response.set_status(404)
     return None
 
-  if request.path == "/login" or admin.IsUserAdmin(game): return team
+  if request.path == "/login" or admin.GetAdminEmail(game): return team
   if CookiePassword(team, request): return team
 
   if request.body:

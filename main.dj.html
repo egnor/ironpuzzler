@@ -18,13 +18,23 @@
             value="{{ team.key_id }}">{{ team.name }}</option>
   {% endfor %}
 </select>
-<label>password: <input type="password" name="pw" value="{{ cookie_password }}" size=10></label>
+<label>password:
+<input type="password" name="pw" value="{{ cookie_password }}" size=10></label>
 <button>Login</button>
-</form>
+</h3></form>
 {% endif %}
 
-{% if game.results_enabled %}
-  <h3>Final results</h3>
+{% if admin_email %}
+<p><a href="/admin">Administrator</a>: {{ admin_email }}
+(<a href="{{ admin_logout_url }}">sign out</a>)</p>
+{% endif %}
+
+{% if game.results_enabled or admin_email %}
+  {% if game.results_enabled %}
+    <h3>Final results</h3>
+  {% else %}
+    <h3>PRELIMINARY results (admin only)</h3>
+  {% endif %}
 
   <table>
     <tr>
@@ -45,7 +55,7 @@
     {% endfor %}
   </table>
 
-  <h3>Final results: Solving</h3>
+  <h3>Results: Solving</h3>
 
   {% regroup puzzles by key_name as puzzle_types %}
 
@@ -102,7 +112,7 @@
     {% endfor %}
   </table>
 
-  <h3>Final results: Voting</h3>
+  <h3>Results: Voting</h3>
 
   <table>
     <tr>

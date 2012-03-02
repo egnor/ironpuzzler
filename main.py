@@ -1,10 +1,12 @@
 # Iron Puzzler main page handler
 
+from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+import admin
 import login
 import model
 import puzzle
@@ -12,7 +14,10 @@ import puzzle
 class MainPage(webapp.RequestHandler):
   def get(self):
     game = model.GetGame()
+
     props = {
+      "admin_email": admin.GetAdminEmail(game),
+      "admin_logout_url": users.create_logout_url(dest_url="/"),
       "game": model.GetProperties(game),
       "puzzles": [],
       "teams": [],
