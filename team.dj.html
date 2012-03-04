@@ -108,7 +108,7 @@ be published.</p>
 </table>
 
 {% if game.voting_enabled %}
-<p><button>Save votes</button>
+<p><button type="submit">Save votes</button>
 <label>
   <input type="checkbox" name="normalize" value="true">
   Auto-normalize scores to 3.0 average
@@ -145,7 +145,7 @@ be published.</p>
           <input type="hidden" name="t" value="{{ team.key_id }}">
           <input type="hidden" name="p" value="{{ puzzle.number }}">
           <input type="text" name="answer" size=20>
-          <button>Submit</button>
+          <button type="submit">Submit</button>
         {% endif %}
         {% if puzzle.guess_count %}
           (<a href="/guess?t={{ team.key_id }}&p={{ puzzle.number|urlencode }}">{{ puzzle.guess_count }} attempt{{ puzzle.guess_count|pluralize }}</a>)
@@ -255,6 +255,6 @@ be published.</p>
   <input type="password" name="confirm_password" size=10></label><br>
 </p>
 
-<button>Update account</button>
+<button type="submit">Update account</button>
 </form>
 </div></body></html>  <!-- end .pagecontent -->

@@ -44,7 +44,7 @@
     <input type="hidden" name="p" value="{{ puzzle.number }}">
     <h3>Solve:
       <input type="text" name="answer" size=20>
-      <button>Submit</button>
+      <button type="submit">Submit</button>
     </h3>
 
     <p>
@@ -83,7 +83,7 @@
     <p class="rightside">Comments for the authors.
     Sent anonymously; sign your name and/or include scores if you wish.</p>
 
-    <button>Save {% if game.solving_enabled %} draft {% endif %}</button>
+    <button type="submit">Save {% if game.solving_enabled %} draft {% endif %}</button>
   </form>
 
   <h3>Solution</h3>
