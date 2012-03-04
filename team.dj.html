@@ -19,19 +19,22 @@ function calc(puzz_type, score_index) {
     }
   }
 
-  var out = document.getElementById("total." + puzz_type + "." + score_index);
-  var target = num * 3.0, diff = Math.abs(total - target);
-  out.value = Math.round(total * 100000.0) / 100000.0;  // Avoid "0.999999999"
-  if (diff < 1.0) {
-    out.style.background = "#88FF88";
-  } else if (diff < 3.0) {
-    out.style.background = "#FFFF00";
-  } else {
-    out.style.background = "#FFAAAA";
-  }
-
+  var target = num * 3.0;
   var ref = document.getElementById("target." + puzz_type);
-  ref.innerHTML = target;
+  if (ref) ref.innerHTML = target;
+
+  var out = document.getElementById("total." + puzz_type + "." + score_index);
+  if (out) {
+    var diff = Math.abs(total - target);
+    out.value = Math.round(total * 100000.0) / 100000.0;  // Avoid "0.999999999"
+    if (diff < 1.0) {
+      out.style.background = "#88FF88";
+    } else if (diff < 3.0) {
+      out.style.background = "#FFFF00";
+    } else {
+      out.style.background = "#FFAAAA";
+    }
+  }
 }
 
 {% regroup other_puzzles by key_name as puzzle_types %}
